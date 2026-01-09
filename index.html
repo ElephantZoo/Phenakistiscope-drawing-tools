@@ -2,20 +2,20 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>费纳奇镜 v9.9 UI & UX Polish (iPad修复版)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>费纳奇镜 v9.9 UI & UX Polish</title>
     <style>
         :root {
             --bg-color: #181818; --panel-color: #252525; --item-color: #333;
             --text-color: #e0e0e0; --accent-color: #00bcd4; --danger-color: #e74c3c;
         }
-        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; display: flex; height: 100vh; overflow: hidden; user-select: none; touch-action: none; -webkit-touch-callout: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; display: flex; height: 100vh; overflow: hidden; user-select: none; touch-action: none; }
         .viewport { flex: 1; position: relative; background-color: #111; overflow: hidden; background-image: linear-gradient(45deg, #1a1a1a 25%, transparent 25%), linear-gradient(-45deg, #1a1a1a 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #1a1a1a 75%), linear-gradient(-45deg, transparent 75%, #1a1a1a 75%); background-size: 20px 20px; cursor: none; min-width: 300px; }
         .viewport.panning { cursor: grab !important; }
         .viewport.panning:active { cursor: grabbing !important; }
         .viewport.rotating { cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path fill='%23fff' d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z'/></svg>"), grab !important; }
         .viewport.erasing { cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' fill='none' stroke='%23e74c3c' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2'/></svg>") 12 12, auto !important; }
-        #mainCanvas { display: block; width: 100%; height: 100%; touch-action: none; }
+        #mainCanvas { display: block; width: 100%; height: 100%; }
         .status-bar { position: absolute; bottom: 10px; left: 10px; background: rgba(0,0,0,0.8); padding: 8px 12px; border-radius: 4px; font-size: 12px; color: #aaa; pointer-events: none; border: 1px solid #444; z-index: 100; }
         .save-indicator { position: absolute; top: 10px; left: 10px; z-index: 100; font-size: 12px; opacity: 0.8; pointer-events: none; display: flex; align-items: center; gap: 5px; background: rgba(0,0,0,0.5); padding: 4px 8px; border-radius: 20px; }
         .dot { width: 8px; height: 8px; border-radius: 50%; background: #555; }
@@ -191,9 +191,11 @@
         ctx.fillStyle = state.backgroundColor; ctx.fill();
         ctx.clip();
         
-        state.layers.forEach(layer => { if (layer.visible) renderLayer(ctx, layer); });
-        if (state.isDrawing && state.currentBrushPath.length > 0) renderLayer(ctx, { ...getActiveLayer(), paths: [new Path(state.currentBrushPath)] });
         if (state.onionEnabled && !state.isPlaying && getActiveLayer()) renderOnionSkins(ctx);
+        
+        state.layers.forEach(layer => { if (layer.visible) renderLayer(ctx, layer); });
+        
+        if (state.isDrawing && state.currentBrushPath.length > 0) renderLayer(ctx, { ...getActiveLayer(), paths: [new Path(state.currentBrushPath)] });
         ctx.restore();
         
         if (!state.isPlaying) {
@@ -206,7 +208,8 @@
                 ctx.save();
                 ctx.lineWidth = 1;
                 ctx.strokeStyle = state.currentTool === 'eraser' ? 'rgba(231, 76, 60, 0.9)' : 'rgba(100,100,100,0.8)';
-                const showCrosshair = state.currentTool === 'eraser' || activeLayer.mode === 'fill';
+                const showCrosshair = state.currentTool === 'eraser' || (state.currentTool === 'brush' && activeLayer.mode === 'fill');
+                
                 if (showCrosshair) {
                     const crosshairSize = 10;
                     ctx.beginPath();
@@ -215,7 +218,7 @@
                     ctx.moveTo(state.cursorScreenX, state.cursorScreenY - crosshairSize);
                     ctx.lineTo(state.cursorScreenX, state.cursorScreenY + crosshairSize);
                     ctx.stroke();
-                } else {
+                } else { // Stroke mode brush
                     const cursorRadius = (activeLayer.strokeWidth / 2) * state.zoom;
                     ctx.beginPath();
                     ctx.arc(state.cursorScreenX, state.cursorScreenY, cursorRadius, 0, 2 * Math.PI);
@@ -339,8 +342,8 @@
     }
 
     function bindEvents() {
-        // Pointer/Mouse Events - 修复iPad触摸兼容
         DOM.viewport.addEventListener('pointerdown', e => {
+            if (e.pointerType === 'touch' && e.isPrimary && state.gesture.type) return;
             if (!e.isPrimary) return;
             DOM.viewport.setPointerCapture(e.pointerId); state.isCursorInCanvas = true;
             if (e.button === 1 || state.isPanning) { startDrag(e); return; }
@@ -387,20 +390,19 @@
         function doDrag(e) { if (!state.drag.isActive) return; state.panX = state.drag.startPanX + (e.clientX - state.drag.startX); state.panY = state.drag.startPanY + (e.clientY - state.drag.startY); render(); }
         function endDrag() { state.drag.isActive = false; }
         
-        // Touch Gestures - 完整兼容iPad，修复触摸绘画+缩放旋转
+        // Touch Gestures
         DOM.viewport.addEventListener('touchstart', handleTouchStart, { passive: false });
         DOM.viewport.addEventListener('touchmove', handleTouchMove, { passive: false });
         DOM.viewport.addEventListener('touchend', handleTouchEnd, { passive: false });
-        DOM.viewport.addEventListener('touchcancel', handleTouchEnd, { passive: false });
         
         // Wheel and Keyboard events
         DOM.viewport.addEventListener('wheel', e => { e.preventDefault(); if (e.shiftKey) { state.viewRotation += (e.deltaY > 0 ? -5 : 5); if (state.snapToMidline) snapRotation(); DOM.rotationSlider.value = state.viewRotation; } else { const rect = DOM.mainCanvas.getBoundingClientRect(); const mx = e.clientX - rect.left, my = e.clientY - rect.top; const zoomFactor = 1.1; let newZoom = state.zoom * (e.deltaY < 0 ? zoomFactor : 1 / zoomFactor); newZoom = Math.max(0.1, Math.min(newZoom, 10)); const offsetX = (mx - state.panX), offsetY = (my - state.panY); state.panX = mx - (offsetX * (newZoom / state.zoom)); state.panY = my - (offsetY * (newZoom / state.zoom)); state.zoom = newZoom; } render(); }, { passive: false });
         window.addEventListener('keydown', e => {
             if (e.target.matches('input')) return;
-            if(e.ctrlKey || e.metaKey){
+            if (e.ctrlKey || e.metaKey) {
                 if (e.key === 'z' && e.shiftKey) { e.preventDefault(); redo(); }
                 else if (e.key === 'z') { e.preventDefault(); undo(); }
-                if (e.key === 'y') { e.preventDefault(); redo(); }
+                if (e.key === 'y') { e.preventDefault(); redo(); } // For Windows
                 if (e.key === '0') { e.preventDefault(); centerView(); }
                 return;
             }
@@ -457,7 +459,7 @@
         DOM.rotationSlider.oninput = e => { state.viewRotation = parseFloat(e.target.value); render(); };
         DOM.rotationSlider.onchange = () => { if (state.snapToMidline) { snapRotation(); render(); } };
         
-        DOM.exportJsonBtn.onclick = () => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify({version: '9.8', state: { ...state, isPlaying: false } })], {type: 'application/json'})); a.download = `vector_project_${Date.now()}.json`; a.click(); URL.revokeObjectURL(a.href); setUnsaved(false); };
+        DOM.exportJsonBtn.onclick = () => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify({version: '9.9', state})], {type: 'application/json'})); a.download = `vector_project_${Date.now()}.json`; a.click(); URL.revokeObjectURL(a.href); setUnsaved(false); };
         DOM.importJsonInput.onchange = e => {
             if (!e.target.files.length) return;
             const reader = new FileReader();
@@ -490,7 +492,7 @@
         DOM.playBtn.onclick = () => { state.isPlaying = !state.isPlaying; DOM.playBtn.textContent = state.isPlaying ? '■ 停止' : '▶ 播放'; DOM.playBtn.classList.toggle('active', !state.isPlaying); DOM.playBtn.style.background = state.isPlaying ? 'var(--danger-color)' : ''; if (!state.isPlaying) { state.animRotation = 0; render(); } };
     }
     
-    // --- Touch Gesture Handlers - iPad完美兼容版 ---
+    // --- Touch Gesture Handlers ---
     function handleTouchStart(e) {
         if (e.touches.length > 1) e.preventDefault();
         resetInteractionState();
@@ -502,19 +504,6 @@
             state.gesture.startAngle = getTouchAngle(e.touches);
             state.gesture.startZoom = state.zoom;
             state.gesture.startViewRotation = state.viewRotation;
-        } else if(e.touches.length === 1 && state.currentTool === 'brush') {
-            // iPad单指触摸绘画 - 新增核心逻辑
-            const touch = e.touches[0];
-            const pos = getScreenToWorldPos(touch.clientX, touch.clientY);
-            state.isDrawing = true;
-            state.currentBrushPath = [pos];
-        } else if(e.touches.length === 1 && state.currentTool === 'eraser') {
-            // iPad单指触摸橡皮擦 - 新增核心逻辑
-            const touch = e.touches[0];
-            const pos = getScreenToWorldPos(touch.clientX, touch.clientY);
-            state.isErasing = true;
-            const pathToErase = findClosestPath(pos);
-            if(pathToErase) state.pathsToErase.add(pathToErase.id);
         }
     }
     function handleTouchMove(e) {
@@ -526,19 +515,6 @@
             state.zoom = Math.max(0.1, Math.min(state.gesture.startZoom * scale, 10));
             const angleDiff = newAngle - state.gesture.startAngle;
             state.viewRotation = state.gesture.startViewRotation + angleDiff;
-            render();
-        } else if(e.touches.length === 1 && state.isDrawing) {
-            // iPad触摸绘画路径记录
-            const touch = e.touches[0];
-            const pos = getScreenToWorldPos(touch.clientX, touch.clientY);
-            state.currentBrushPath.push(pos);
-            render();
-        } else if(e.touches.length === 1 && state.isErasing) {
-            // iPad触摸橡皮擦路径记录
-            const touch = e.touches[0];
-            const pos = getScreenToWorldPos(touch.clientX, touch.clientY);
-            const pathToErase = findClosestPath(pos);
-            if(pathToErase) state.pathsToErase.add(pathToErase.id);
             render();
         }
     }
@@ -552,51 +528,33 @@
             for(let i=0; i < Math.min(startPoints.length, endPoints.length); i++) {
                 totalMove += Math.hypot(startPoints[i].x - endPoints[i].x, startPoints[i].y - endPoints[i].y);
             }
+
             if (totalMove < CONFIG.tapMoveThreshold * startPoints.length) {
                 if (startPoints.length === 2) { undo(); }
                 if (startPoints.length === 3) { redo(); }
             }
         }
-        // iPad触摸结束，保存绘画/橡皮擦路径
-        if(state.isDrawing) {
-            const layer = getActiveLayer();
-            if (layer && state.currentBrushPath.length > 0) { 
-                const simplified = simplifyPath(state.currentBrushPath, CONFIG.pathSimplificationThreshold / state.zoom); 
-                layer.paths.push(new Path(simplified)); 
-                saveHistory(); 
-                setUnsaved(true); 
-            }
-        }
-        if(state.isErasing) {
-            const layer = getActiveLayer();
-            if (layer && state.pathsToErase.size > 0) { 
-                layer.paths = layer.paths.filter(p => !state.pathsToErase.has(p.id)); 
-                saveHistory(); 
-                setUnsaved(true); 
-            }
-        }
         resetGestureState();
-        resetInteractionState();
-        render();
     }
     function getTouchDistance(touches) { return Math.hypot(touches[0].clientX - touches[1].clientX, touches[0].clientY - touches[1].clientY); }
     function getTouchAngle(touches) { return Math.atan2(touches[0].clientY - touches[1].clientY, touches[0].clientX - touches[1].clientX) * 180 / Math.PI; }
     function resetGestureState() { state.gesture.type = null; state.gesture.startPoints = []; }
 
-    // ✅ 修复核心：iPad坐标转换函数，完美适配触摸位置
-    function getScreenToWorldPos(screenX, screenY) { 
-        const rect = DOM.viewport.getBoundingClientRect(); 
-        const viewX = screenX - rect.left - rect.x;
-        const viewY = screenY - rect.top - rect.y;
-        const worldX = (viewX - state.panX) / state.zoom, worldY = (viewY - state.panY) / state.zoom;
+    function getScreenToWorldPos(screenX, screenY) {
+        const rect = DOM.viewport.getBoundingClientRect();
+        const viewX = screenX - rect.left;
+        const viewY = screenY - rect.top;
+        const worldX = (viewX - state.panX) / state.zoom;
+        const worldY = (viewY - state.panY) / state.zoom;
         const cx = CONFIG.baseSize / 2, cy = CONFIG.baseSize / 2;
         const dx = worldX - cx, dy = worldY - cy;
         const dynamicRotation = state.isPlaying ? state.animRotation : 0;
         const rad = -(state.viewRotation + dynamicRotation) * Math.PI / 180;
         const finalX = dx * Math.cos(rad) - dy * Math.sin(rad) + cx;
         const finalY = dx * Math.sin(rad) + dy * Math.cos(rad) + cy;
-        return { x: finalX, y: finalY }; 
+        return { x: finalX, y: finalY };
     }
+
     function getMouseAngle(clientX, clientY) { const rect = DOM.mainCanvas.getBoundingClientRect(); const z = state.zoom || 1; const screenCx = rect.left + state.panX + (CONFIG.baseSize/2 * z); const screenCy = rect.top + state.panY + (CONFIG.baseSize/2 * z); return Math.atan2(clientY - screenCy, clientX - screenCx) * 180 / Math.PI; }
     function resizeCanvas() { DOM.mainCanvas.width = DOM.viewport.clientWidth * state.dpr; DOM.mainCanvas.height = DOM.viewport.clientHeight * state.dpr; render(); }
     function loop(time) {
@@ -613,7 +571,7 @@
                     state.animRotation = (state.animRotation - (step * state.rotDirection));
                     window._sliceTime = 0;
                 }
-            } else {
+            } else { // uniform mode
                 const degreesPerSecond = state.fps * 6;
                 const rotationThisFrame = degreesPerSecond * (deltaTime / 1000);
                 state.animRotation = (state.animRotation - (rotationThisFrame * state.rotDirection));
