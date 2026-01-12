@@ -1,24 +1,73 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
+    <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>费纳奇镜 v12.0 (稳定版)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     
+    <!-- 🔤 中文SEO标签（保留，不影响英文收录） -->
+    <title>费纳奇镜动画绘制工具 v12.3  - 免费在线制作费纳奇镜动画</title>
+    <meta name="description" content="免费在线费纳奇镜动画绘制工具，无需安装，支持图层绘制、洋葱皮、逐帧播放、旋转创作、导出项目，纯个人开源非盈利工具，禁止商用牟利。">
+    <meta name="keywords" content="费纳奇镜,费那奇镜,费纳奇镜动画,费那奇镜制作,动画绘制工具,在线动画创作,旋转动画">
+    
+    <!-- 🔤 英文SEO标签（新增，英文用户核心） -->
+    <title>Phenakistiscope Animation Tool v12.3 - Free Online Phenakistiscope Maker</title>
+    <meta name="description" content="Free online Phenakistiscope animation tool - No installation needed. Create, edit, and export phenakistiscope animations with layers, onion skin, and frame-by-frame playback. Open-source & non-commercial.">
+    <meta name="keywords" content="phenakistiscope, phenakistiscope animation, online phenakistiscope tool, phenakistiscope maker, animation creator, free animation tool">
+    
+    <!-- 🚀 多语言声明（告诉搜索引擎支持中英文，优先推给对应语言用户） -->
+    <link rel="alternate" hreflang="zh-CN" href="https://你的地址.pages.dev" />
+    <link rel="alternate" hreflang="en" href="https://你的地址.pages.dev" />
+    <link rel="alternate" hreflang="x-default" href="https://你的地址.pages.dev" />
+    
+    <!-- 📱 英文社交媒体分享优化（英文用户分享时预览正确） -->
+    <meta property="og:title" content="Phenakistiscope Animation Tool v12.3 - Free Online Maker">
+    <meta property="og:description" content="Create phenakistiscope animations online for free. Open-source tool with layers, onion skin, and export features.">
+    <meta property="og:type" content="tool">
+    <meta property="og:locale" content="en_US">
+    
+    <!-- 其他原有标签（robots、author、theme-color等，保留不变） -->
+    <meta name="robots" content="index, follow, all">
+    <meta name="author" content="Elephantzoo">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="theme-color" content="#181818">
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <!-- 原有样式代码... -->
 
     <style>
         :root {
             --bg-color: #181818; --panel-color: #252525; --item-color: #333;
             --text-color: #e0e0e0; --accent-color: #00bcd4; --danger-color: #e74c3c;
         }
-        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; display: flex; height: 100vh; overflow: hidden; user-select: none; }
-        .viewport { flex: 1; position: relative; background-color: #111; overflow: hidden; background-image: linear-gradient(45deg, #1a1a1a 25%, transparent 25%), linear-gradient(-45deg, #1a1a1a 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #1a1a1a 75%), linear-gradient(-45deg, transparent 75%, #1a1a1a 75%); background-size: 20px 20px; cursor: none; min-width: 300px; }
+        /* 核心修复：防止浏览器劫持触控 */
+        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; display: flex; height: 100vh; overflow: hidden; user-select: none; touch-action: none; }
+        
+        /* 弹窗样式 START */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.75); z-index: 2000; display: flex; justify-content: center; align-items: center; backdrop-filter: blur(3px); animation: fadeIn 0.3s ease; }
+        .modal-content { background: #252525; padding: 25px; border-radius: 8px; width: 90%; max-width: 420px; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.6); border: 1px solid #444; color: #e0e0e0; animation: slideUp 0.3s ease; }
+        .close-modal { position: absolute; top: 12px; right: 15px; background: none; border: none; color: #888; font-size: 28px; cursor: pointer; padding: 0; line-height: 1; transition: 0.2s; width: auto; text-align: right;}
+        .close-modal:hover { color: #fff; transform: scale(1.1); background: none; }
+        .modal-header { font-size: 18px; font-weight: bold; margin-bottom: 20px; color: var(--accent-color); border-bottom: 1px solid #333; padding-bottom: 10px; }
+        .modal-body p { margin: 12px 0; font-size: 14px; line-height: 1.6; }
+        .modal-body a { color: var(--accent-color); text-decoration: none; transition: 0.2s; border-bottom: 1px dashed rgba(0,188,212,0.3); }
+        .modal-body a:hover { text-decoration: none; border-bottom-style: solid; color: #fff; }
+        .disclaimer { color: #aaa; font-size: 13px; background: rgba(0,0,0,0.2); padding: 12px; border-radius: 4px; border-left: 3px solid var(--danger-color); margin-top: 15px; }
+        .disclaimer strong { color: #ccc; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        /* 弹窗样式 END */
+
+        .viewport { 
+            flex: 1; position: relative; background-color: #111; overflow: hidden; 
+            background-image: linear-gradient(45deg, #1a1a1a 25%, transparent 25%), linear-gradient(-45deg, #1a1a1a 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #1a1a1a 75%), linear-gradient(-45deg, transparent 75%, #1a1a1a 75%); 
+            background-size: 20px 20px; cursor: none; min-width: 300px; touch-action: none; 
+        }
         .viewport.panning { cursor: grab !important; }
         .viewport.panning:active { cursor: grabbing !important; }
         .viewport.rotating { cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path fill='%23fff' d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z'/></svg>"), grab !important; }
         .viewport.erasing { cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' fill='none' stroke='%23e74c3c' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2'/></svg>") 12 12, auto !important; }
-        #mainCanvas { display: block; width: 100%; height: 100%; }
+        #mainCanvas { display: block; width: 100%; height: 100%; touch-action: none; }
         .save-indicator { position: absolute; top: 10px; left: 10px; z-index: 100; font-size: 12px; opacity: 0.8; pointer-events: none; display: flex; align-items: center; gap: 5px; background: rgba(0,0,0,0.5); padding: 4px 8px; border-radius: 20px; }
         .dot { width: 8px; height: 8px; border-radius: 50%; background: #555; }
         .dot.unsaved { background: var(--danger-color); box-shadow: 0 0 5px var(--danger-color); }
@@ -64,6 +113,26 @@
     </style>
 </head>
 <body>
+    <!-- 启动弹窗（新增英文翻译，不影响中文阅读） -->
+    <div id="welcomeModal" class="modal-overlay">
+        <div class="modal-content">
+            <button class="close-modal" id="closeModalBtn">×</button>
+            <div class="modal-header">关于本项目 / About This Project</div>
+            <div class="modal-body">
+                <p>▸ 开发者 / Developer：Elephantzoo</p>
+                <p>▸ 项目开源 / Open Source：<a href="https://github.com/ElephantZoo/-" target="_blank">GitHub Repository</a></p>
+                <p>▸ 交流反馈 / Feedback：<a href="https://www.xiaohongshu.com/user/profile/6103db4f00000000010074ba" target="_blank">小红书@半扇🐘</a> (UID: 49697709596)</p>
+                
+                <div class="disclaimer">
+                    本网站为个人非盈利开源项目 / This is a personal open-source non-commercial project.<br>
+                    ✅ <strong>全站功能 / 创作内容 免费使用</strong> / All features & creations are free for personal use.<br>
+                    ❌ <strong>严禁任何商用、盈利、倒卖等商业牟利行为</strong> / Commercial use, profit-making, or resale is strictly prohibited.<br>
+                    <div style="margin-top:8px; font-style: italic;">感谢使用 / Thank you for using ✨</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="viewport" id="viewport">
         <div class="save-indicator"> <div class="dot saved" id="statusDot"></div> <span id="statusText">已保存</span> </div>
         <canvas id="mainCanvas"></canvas>
@@ -198,7 +267,7 @@
     let undoStack = [], redoStack = [];
 
     function init() {
-        const ids = [ "viewport", "mainCanvas", "importJsonInput", "onionToggle", "onionOpacity", "onionOpacityVal", "fpsRange", "fpsVal", "rotationSlider", "currentLayerInput", "layerList", "brushSizeLabel", "brushSize", "brushSizeVal", "statusDot", "statusText", "playBtn", "playbackModeBtn", "sliceCount", "snapToggle", "layerColorInput", "layerOpacity", "layerOpacityVal", "modeFillBtn", "modeStrokeBtn", "toolEraserBtn", "undoBtn", "redoBtn", "addLayerBtn", "delLayerBtn", "clearLayerBtn", "resetViewBtn", "exportJsonBtn", "resetAllBtn", "rotateDirBtn", "backgroundColorInput", "onionLayerBtn", "projectNameInput", "copyLayerBtn", "onionBeforeToggle", "onionAfterToggle" ];
+        const ids = [ "viewport", "mainCanvas", "importJsonInput", "onionToggle", "onionOpacity", "onionOpacityVal", "fpsRange", "fpsVal", "rotationSlider", "currentLayerInput", "layerList", "brushSizeLabel", "brushSize", "brushSizeVal", "statusDot", "statusText", "playBtn", "playbackModeBtn", "sliceCount", "snapToggle", "layerColorInput", "layerOpacity", "layerOpacityVal", "modeFillBtn", "modeStrokeBtn", "toolEraserBtn", "undoBtn", "redoBtn", "addLayerBtn", "delLayerBtn", "clearLayerBtn", "resetViewBtn", "exportJsonBtn", "resetAllBtn", "rotateDirBtn", "backgroundColorInput", "onionLayerBtn", "projectNameInput", "copyLayerBtn", "onionBeforeToggle", "onionAfterToggle", "welcomeModal", "closeModalBtn" ];
         ids.forEach(id => DOM[id] = document.getElementById(id));
         DOM.ctx = DOM.mainCanvas.getContext('2d');
         state.dpr = window.devicePixelRatio || 1;
@@ -419,16 +488,132 @@
     }
 
     function bindEvents() {
-        DOM.viewport.addEventListener('pointerdown', e => { if (!e.isPrimary) return; DOM.viewport.setPointerCapture(e.pointerId); state.isCursorInCanvas = true; if (e.button === 1 || state.isPanning) { startDrag(e); return; } if (state.isRotating) { state.dragStartAngle = getMouseAngle(e.clientX, e.clientY); state.dragStartViewRot = state.viewRotation; return; } const pos = getScreenToWorldPos(e.clientX, e.clientY); if (state.currentTool === 'eraser') { state.isErasing = true; const pathToErase = findClosestPath(pos); if (pathToErase) state.pathsToErase.add(pathToErase.id); } else if (state.currentTool === 'brush') { state.isDrawing = true; state.currentBrushPath = [pos]; } });
-        DOM.viewport.addEventListener('pointermove', e => { if (!e.isPrimary) return; state.cursorScreenX = e.clientX - DOM.viewport.getBoundingClientRect().left; state.cursorScreenY = e.clientY - DOM.viewport.getBoundingClientRect().top; const worldPos = getScreenToWorldPos(e.clientX, e.clientY); state.cursorWorldX = worldPos.x; state.cursorWorldY = worldPos.y; if (state.drag.isActive) { doDrag(e); return; } if (state.isRotating && (e.buttons & 1)) { state.viewRotation = state.dragStartViewRot + (getMouseAngle(e.clientX, e.clientY) - state.dragStartAngle); if (state.snapToMidline) snapRotation(); DOM.rotationSlider.value = state.viewRotation; render(); return; } if (state.isDrawing) { state.currentBrushPath.push(worldPos); } if (state.isErasing) { const pathToErase = findClosestPath(worldPos); if (pathToErase) state.pathsToErase.add(pathToErase.id); } render(); });
-        DOM.viewport.addEventListener('pointerup', e => { if (!e.isPrimary) return; DOM.viewport.releasePointerCapture(e.pointerId); if (state.isDrawing) { const layer = getActiveLayer(); if (layer && state.currentBrushPath.length > 0) { const simplified = simplifyPath(state.currentBrushPath, CONFIG.pathSimplificationThreshold / state.zoom); layer.paths.push(new Path(simplified)); saveHistory(); } } if (state.isErasing) { const layer = getActiveLayer(); if (layer && state.pathsToErase.size > 0) { layer.paths = layer.paths.filter(p => !state.pathsToErase.has(p.id)); saveHistory(); } } state.isDrawing = false; state.isErasing = false; state.drag.isActive = false; state.currentBrushPath = []; state.pathsToErase.clear(); render(); });
+        DOM.viewport.addEventListener('pointerdown', e => { 
+            if (!e.isPrimary && e.pointerType !== 'pen') return;
+            e.preventDefault();
+
+            DOM.viewport.setPointerCapture(e.pointerId); 
+            state.isCursorInCanvas = true; 
+            
+            if (e.button === 1 || state.isPanning) { startDrag(e); return; } 
+            
+            if (state.isRotating) { 
+                state.dragStartAngle = getMouseAngle(e.clientX, e.clientY); 
+                state.dragStartViewRot = state.viewRotation; 
+                return; 
+            } 
+            
+            const pos = getScreenToWorldPos(e.clientX, e.clientY); 
+            if (state.currentTool === 'eraser') { 
+                state.isErasing = true; 
+                const pathToErase = findClosestPath(pos); 
+                if (pathToErase) state.pathsToErase.add(pathToErase.id); 
+            } else if (state.currentTool === 'brush') { 
+                state.isDrawing = true; 
+                state.currentBrushPath = [pos]; 
+            } 
+        });
+
+        DOM.viewport.addEventListener('pointermove', e => { 
+            if (!e.isPrimary && e.pointerType !== 'pen') return;
+            e.preventDefault();
+
+            state.cursorScreenX = e.clientX - DOM.viewport.getBoundingClientRect().left; 
+            state.cursorScreenY = e.clientY - DOM.viewport.getBoundingClientRect().top; 
+            const worldPos = getScreenToWorldPos(e.clientX, e.clientY); 
+            state.cursorWorldX = worldPos.x; 
+            state.cursorWorldY = worldPos.y; 
+            
+            if (state.drag.isActive) { doDrag(e); return; } 
+            
+            if (state.isRotating && (e.buttons & 1)) { 
+                state.viewRotation = state.dragStartViewRot + (getMouseAngle(e.clientX, e.clientY) - state.dragStartAngle); 
+                if (state.snapToMidline) snapRotation(); 
+                DOM.rotationSlider.value = state.viewRotation; 
+                render(); 
+                return; 
+            } 
+            
+            if (state.isDrawing) { 
+                const events = e.getCoalescedEvents ? e.getCoalescedEvents() : [e];
+                events.forEach(ev => {
+                    const coPos = getScreenToWorldPos(ev.clientX, ev.clientY);
+                    state.currentBrushPath.push(coPos);
+                });
+            } 
+            
+            if (state.isErasing) { 
+                const events = e.getCoalescedEvents ? e.getCoalescedEvents() : [e];
+                events.forEach(ev => {
+                   const coPos = getScreenToWorldPos(ev.clientX, ev.clientY);
+                   const pathToErase = findClosestPath(coPos); 
+                   if (pathToErase) state.pathsToErase.add(pathToErase.id); 
+                });
+            } 
+            render(); 
+        });
+
+        DOM.viewport.addEventListener('pointerup', e => { 
+            if (!e.isPrimary && e.pointerType !== 'pen') return;
+            DOM.viewport.releasePointerCapture(e.pointerId); 
+            
+            if (state.isDrawing) { 
+                const layer = getActiveLayer(); 
+                if (layer && state.currentBrushPath.length > 0) { 
+                    const simplified = simplifyPath(state.currentBrushPath, CONFIG.pathSimplificationThreshold / state.zoom); 
+                    layer.paths.push(new Path(simplified)); 
+                    saveHistory(); 
+                } 
+            } 
+            
+            if (state.isErasing) { 
+                const layer = getActiveLayer(); 
+                if (layer && state.pathsToErase.size > 0) { 
+                    layer.paths = layer.paths.filter(p => !state.pathsToErase.has(p.id)); 
+                    saveHistory(); 
+                } 
+            } 
+            
+            state.isDrawing = false; 
+            state.isErasing = false; 
+            state.drag.isActive = false; 
+            state.currentBrushPath = []; 
+            state.pathsToErase.clear(); 
+            render(); 
+        });
+
         DOM.viewport.addEventListener('pointerleave', () => { state.isCursorInCanvas = false; state.isDrawing = false; state.isErasing = false; state.drag.isActive = false; state.currentBrushPath = []; state.pathsToErase.clear(); render(); });
         DOM.viewport.addEventListener('pointerenter', () => { state.isCursorInCanvas = true; });
         function startDrag(e) { state.drag.isActive = true; state.drag.startX = e.clientX; state.drag.startY = e.clientY; state.drag.startPanX = state.panX; state.drag.startPanY = state.panY; }
         function doDrag(e) { if (!state.drag.isActive) return; state.panX = state.drag.startPanX + (e.clientX - state.drag.startX); state.panY = state.drag.startPanY + (e.clientY - state.drag.startY); render(); }
         DOM.viewport.addEventListener('wheel', e => { e.preventDefault(); if (e.shiftKey) { state.viewRotation += (e.deltaY > 0 ? -5 : 5); if (state.snapToMidline) snapRotation(); DOM.rotationSlider.value = state.viewRotation; } else { const rect = DOM.mainCanvas.getBoundingClientRect(); const mx = e.clientX - rect.left, my = e.clientY - rect.top; const zoomFactor = 1.1; let newZoom = state.zoom * (e.deltaY < 0 ? zoomFactor : 1 / zoomFactor); newZoom = Math.max(0.1, Math.min(newZoom, 10)); const offsetX = (mx - state.panX), offsetY = (my - state.panY); state.panX = mx - (offsetX * (newZoom / state.zoom)); state.panY = my - (offsetY * (newZoom / state.zoom)); state.zoom = newZoom; } render(); }, { passive: false });
         
-        window.addEventListener('keydown', e => { if (e.target.matches('input')) return; if (e.ctrlKey || e.metaKey) { if (e.key.toLowerCase() === 'z' && e.shiftKey) { e.preventDefault(); redo(); } else if (e.key.toLowerCase() === 'z') { e.preventDefault(); undo(); } if (e.key.toLowerCase() === 'y') { e.preventDefault(); redo(); } if (e.key === '0') { e.preventDefault(); centerView(); } return; } if (e.code === 'ArrowLeft' || e.code === 'ArrowRight') { e.preventDefault(); const direction = e.code === 'ArrowLeft' ? 1 : -1; state.viewRotation += direction * (360 / state.sliceCount); state.viewRotation = (state.viewRotation % 360 + 360) % 360; if (state.isDrawing) state.currentBrushPath.push({ x: state.cursorWorldX, y: state.cursorWorldY }); if (state.snapToMidline) snapRotation(); DOM.rotationSlider.value = state.viewRotation; render(); } if(e.key === '[' || e.key === ']') { const layer = getActiveLayer(); if(layer) { const change = e.key === '[' ? -1 : 1; const newWidth = Math.max(1, Math.min(100, parseInt(layer.strokeWidth) + change)); changeActiveLayerProperty('strokeWidth', newWidth); } } if (e.code === 'Space' && !e.repeat) { e.preventDefault(); state.isPanning = true; DOM.viewport.classList.add('panning'); state.isRotating = false; DOM.viewport.classList.remove('rotating'); } if (e.code === 'KeyR' && !e.repeat) { if (!state.isPanning) { state.isRotating = true; DOM.viewport.classList.add('rotating'); } } if (e.code === 'KeyB') { if (!state.isPanning) { state.currentTool = 'brush'; DOM.viewport.classList.remove('erasing'); updateUI(); } } if (e.code === 'KeyE') { if (!state.isPanning) { state.currentTool = 'eraser'; DOM.viewport.classList.add('erasing'); updateUI(); } } });
+        window.addEventListener('keydown', e => { 
+            if (e.target.matches('input')) return; 
+            if (e.ctrlKey || e.metaKey) { if (e.key.toLowerCase() === 'z' && e.shiftKey) { e.preventDefault(); redo(); } else if (e.key.toLowerCase() === 'z') { e.preventDefault(); undo(); } if (e.key.toLowerCase() === 'y') { e.preventDefault(); redo(); } if (e.key === '0') { e.preventDefault(); centerView(); } return; } 
+            if (e.code === 'ArrowLeft' || e.code === 'ArrowRight') { e.preventDefault(); const direction = e.code === 'ArrowLeft' ? 1 : -1; state.viewRotation += direction * (360 / state.sliceCount); state.viewRotation = (state.viewRotation % 360 + 360) % 360; if (state.isDrawing) state.currentBrushPath.push({ x: state.cursorWorldX, y: state.cursorWorldY }); if (state.snapToMidline) snapRotation(); DOM.rotationSlider.value = state.viewRotation; render(); } 
+            if(e.key === '[' || e.key === ']') { const layer = getActiveLayer(); if(layer) { const change = e.key === '[' ? -1 : 1; const newWidth = Math.max(1, Math.min(100, parseInt(layer.strokeWidth) + change)); changeActiveLayerProperty('strokeWidth', newWidth); } } 
+            if (e.code === 'Space' && !e.repeat) { e.preventDefault(); state.isPanning = true; DOM.viewport.classList.add('panning'); state.isRotating = false; DOM.viewport.classList.remove('rotating'); } 
+            if (e.code === 'KeyR' && !e.repeat) { if (!state.isPanning) { state.isRotating = true; DOM.viewport.classList.add('rotating'); } } 
+            
+            // 按键切换工具的逻辑
+            if (e.code === 'KeyB') { 
+                if (!state.isPanning) { 
+                    state.currentTool = 'brush'; 
+                    DOM.viewport.classList.remove('erasing'); 
+                    updateUI(); 
+                    render(); // 立即刷新
+                } 
+            } 
+            if (e.code === 'KeyE') { 
+                if (!state.isPanning) { 
+                    state.currentTool = 'eraser'; 
+                    DOM.viewport.classList.add('erasing'); 
+                    updateUI(); 
+                    render(); // 立即刷新
+                } 
+            } 
+        });
         window.addEventListener('keyup', e => { if (e.code === 'Space') { state.isPanning = false; DOM.viewport.classList.remove('panning'); resetInteractionState(); render(); } if (e.code === 'KeyR') { if (!state.isPanning) { state.isRotating = false; DOM.viewport.classList.remove('rotating'); if (state.snapToMidline) { snapRotation(); render(); } } } });
         window.addEventListener('blur', () => { state.isPanning = false; DOM.viewport.classList.remove('panning', 'rotating'); resetInteractionState(); });
         window.addEventListener('beforeunload', (e) => { if (state.hasUnsavedChanges) { e.preventDefault(); e.returnValue = ''; } });
@@ -448,9 +633,12 @@
         DOM.layerOpacity.oninput = e => { const layer = getActiveLayer(); if (layer) { layer.opacity = parseFloat(e.target.value); updateUI(); render(); } };
         DOM.layerOpacity.onchange = () => saveHistory();
         DOM.backgroundColorInput.oninput = e => { state.backgroundColor = e.target.value; updateUI(); render(); };
-        DOM.modeFillBtn.onclick = () => { if (!state.isPanning) { state.currentTool = 'brush'; DOM.viewport.classList.remove('erasing'); changeActiveLayerProperty('mode', 'fill'); } };
-        DOM.modeStrokeBtn.onclick = () => { if (!state.isPanning) { state.currentTool = 'brush'; DOM.viewport.classList.remove('erasing'); changeActiveLayerProperty('mode', 'stroke'); } };
-        DOM.toolEraserBtn.onclick = () => { if (!state.isPanning) { state.currentTool = 'eraser'; DOM.viewport.classList.add('erasing'); updateUI(); } };
+        
+        // 核心修复：点击工具按钮时立即调用 render() 以更新光标
+        DOM.modeFillBtn.onclick = () => { if (!state.isPanning) { state.currentTool = 'brush'; DOM.viewport.classList.remove('erasing'); changeActiveLayerProperty('mode', 'fill'); render(); } };
+        DOM.modeStrokeBtn.onclick = () => { if (!state.isPanning) { state.currentTool = 'brush'; DOM.viewport.classList.remove('erasing'); changeActiveLayerProperty('mode', 'stroke'); render(); } };
+        DOM.toolEraserBtn.onclick = () => { if (!state.isPanning) { state.currentTool = 'eraser'; DOM.viewport.classList.add('erasing'); updateUI(); render(); } };
+        
         DOM.onionToggle.onchange = e => { state.onionSkins.enabled = e.target.checked; updateUI(); render(); };
         DOM.onionBeforeToggle.onchange = e => { state.onionSkins.showBefore = e.target.checked; updateUI(); render(); };
         DOM.onionAfterToggle.onchange = e => { state.onionSkins.showAfter = e.target.checked; updateUI(); render(); };
@@ -465,6 +653,10 @@
         DOM.playbackModeBtn.onclick = function() { state.playbackMode = state.playbackMode === 'slice' ? 'uniform' : 'slice'; this.textContent = state.playbackMode === 'slice' ? '逐格模式' : '匀速模式'; };
         DOM.playBtn.onclick = () => { state.isPlaying = !state.isPlaying; DOM.playBtn.textContent = state.isPlaying ? '■ 停止' : '▶ 播放'; DOM.playBtn.classList.toggle('active', state.isPlaying); DOM.playBtn.style.background = state.isPlaying ? 'var(--danger-color)' : ''; if (!state.isPlaying) { state.animRotation = 0; render(); } };
         DOM.onionLayerBtn.onclick = () => { state.onionOnTop = !state.onionOnTop; updateUI(); render(); };
+
+        // 弹窗逻辑
+        DOM.closeModalBtn.onclick = () => { DOM.welcomeModal.style.display = 'none'; };
+        DOM.welcomeModal.onclick = (e) => { if (e.target === DOM.welcomeModal) { DOM.welcomeModal.style.display = 'none'; } };
 
         DOM.exportJsonBtn.onclick = async () => {
             const originalButtonText = DOM.exportJsonBtn.textContent;
@@ -540,11 +732,6 @@
                 state.animRotation = (state.animRotation - (rotationThisFrame * state.rotDirection));
             }
             render();
-            if (state.isDrawing && state.isCursorInCanvas) {
-                const rect = DOM.viewport.getBoundingClientRect();
-                const worldPos = getScreenToWorldPos(rect.left + state.cursorScreenX, rect.top + state.cursorScreenY);
-                state.currentBrushPath.push(worldPos);
-            }
         } else { window._lastTime = 0; window._sliceTime = 0; }
         requestAnimationFrame(loop);
     }
