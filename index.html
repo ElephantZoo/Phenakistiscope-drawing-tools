@@ -3,8 +3,8 @@
 <head>
     <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    
+    <!-- 原代码替换成这个，适配iPad+手机+电脑，禁止系统缩放，全屏无白边 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">    
     <!-- 🔤 中文SEO标签（保留，不影响英文收录） -->
     <title>费纳奇镜动画绘制工具 v12.3  - 免费在线制作费纳奇镜动画</title>
     <meta name="description" content="免费在线费纳奇镜动画绘制工具，无需安装，支持图层绘制、洋葱皮、逐帧播放、旋转创作、导出项目，纯个人开源非盈利工具，禁止商用牟利。">
@@ -110,6 +110,22 @@
         .shortcut-panel { position: absolute; bottom: 10px; left: 10px; right: 10px; background: rgba(0,0,0,0.9); padding: 8px 15px; border-radius: 6px; font-size: 12px; color: #ccc; pointer-events: none; border: 1px solid #555; z-index: 99; display: flex; flex-wrap: wrap; gap: 18px; justify-content: center; }
         .shortcut-panel span { display: inline-block; }
         .shortcut-panel strong { color: var(--accent-color); font-weight: normal; padding: 0 2px; }
+        /* ====== iPad触摸专属优化 (新增) ====== */
+        * {
+        -webkit-touch-callout: none; /* 禁用iPad长按弹出菜单 */
+        -webkit-user-select: none;   /* 禁用iPad长按选中文本 */
+        user-select: none;
+        touch-action: none;          /* 禁止系统默认的触摸滚动/缩放，完全自定义手势 */
+        }
+        canvas {
+        -webkit-tap-highlight-color: transparent; /* 移除iPad点击画布的高亮框 */
+        tap-highlight-color: transparent;
+        }
+        /* 解决iPad端按钮点击延迟 */
+        button {
+        -webkit-touch-callout: none;
+        touch-action: manipulation;
+        }
     </style>
 </head>
 <body>
@@ -711,8 +727,64 @@
         return { x: finalX, y: finalY };
     }
 
-    function getMouseAngle(clientX, clientY) { const rect = DOM.mainCanvas.getBoundingClientRect(); const z = state.zoom || 1; const screenCx = rect.left + state.panX + (CONFIG.baseSize/2 * z); const screenCy = rect.top + state.panY + (CONFIG.baseSize/2 * z); return Math.atan2(clientY - screenCy, clientX - screenCx) * 180 / Math.PI; }
-    function resizeCanvas() { DOM.mainCanvas.width = DOM.viewport.clientWidth * state.dpr; DOM.mainCanvas.height = DOM.viewport.clientHeight * state.dpr; render(); }
+        function getMouseAngle(clientX, clientY) { const rect = DOM.mainCanvas.getBoundingClientRect(); const z = state.zoom || 1; const screenCx = rect.left + state.panX + (CONFIG.baseSize/2 * z); const screenCy = rect.top + state.panY + (CONFIG.baseSize/2 * z); return Math.atan2(clientY - screenCy, clientX - screenCx) * 180 / Math.PI; }
+        function resizeCanvas() { DOM.mainCanvas.width = DOM.viewport.clientWidth * state.dpr; DOM.mainCanvas.height = DOM.viewport.clientHeight * state.dpr; render(); }
+        // ====== iPad/平板 手势适配：Procreate同款 平移/缩放/旋转 (新增，粘贴到JS末尾) ======
+    let touchPoints = []; // 存储双指坐标
+    let lastScale = 1;    // 上一次缩放比例
+    let lastAngle = 0;    // 上一次旋转角度
+    const canvas = document.getElementById('canvas'); // 你的画布ID，不用改！
+
+    // 触摸开始：单指/双指按下
+    canvas.addEventListener('touchstart', (e) => {
+    e.preventDefault(); // 禁止系统默认行为
+    touchPoints = Array.from(e.touches).map(t => ({ x: t.clientX, y: t.clientY }));
+    lastScale = state.scale; // 记录当前缩放比例
+    lastAngle = state.rotation; // 记录当前旋转角度
+    });
+
+    // 触摸移动：核心手势逻辑（单指平移，双指缩放+旋转）
+    canvas.addEventListener('touchmove', (e) => {
+    e.preventDefault();
+    const touches = Array.from(e.touches).map(t => ({ x: t.clientX, y: t.clientY }));
+    
+    // ✅ 单指触摸 = 平移画布 (Procreate同款：按住画布拖动)
+    if (touches.length === 1) {
+        if (touchPoints.length === 1) {
+        const dx = touches[0].x - touchPoints[0].x;
+        const dy = touches[0].y - touchPoints[0].y;
+        state.offsetX += dx;
+        state.offsetY += dy;
+        }
+        touchPoints = touches;
+    }
+
+    // ✅ 双指触摸 = 缩放+旋转画布 (Procreate同款：捏合缩放、旋转手势)
+    if (touches.length === 2 && touchPoints.length === 2) {
+        // 计算双指距离 = 缩放比例
+        const getDistance = (p1, p2) => Math.hypot(p2.x - p1.x, p2.y - p1.y);
+        const currDist = getDistance(touches[0], touches[1]);
+        const prevDist = getDistance(touchPoints[0], touchPoints[0]);
+        const scaleFactor = currDist / (prevDist || 1);
+        state.scale = lastScale * scaleFactor;
+        state.scale = Math.max(0.2, Math.min(5, state.scale)); // 缩放范围限制，防止过大过小
+
+        // 计算双指角度 = 画布旋转角度
+        const getAngle = (p1, p2) => Math.atan2(p2.y - p1.y, p2.x - p1.x);
+        const currAngle = getAngle(touches[0], touches[1]);
+        const prevAngle = getAngle(touchPoints[0], touchPoints[0]);
+        const angleDiff = currAngle - prevAngle;
+        state.rotation = lastAngle + angleDiff * 180 / Math.PI;
+    }
+    });
+
+    // 触摸结束：清空手势状态
+    canvas.addEventListener('touchend', () => {
+    touchPoints = [];
+    });
+    canvas.addEventListener('touchcancel', () => {
+    touchPoints = [];
+    });
     function loop(time) {
         if (state.isPlaying) {
             if (!window._lastTime) window._lastTime = time;
