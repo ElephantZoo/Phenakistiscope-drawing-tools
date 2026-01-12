@@ -1,243 +1,297 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    
-    <!-- 🔤 中文SEO标签（保留，不影响英文收录） -->
-    <title>费纳奇镜动画绘制工具 v12.3  - 免费在线制作费纳奇镜动画</title>
-    <meta name="description" content="免费在线费纳奇镜动画绘制工具，无需安装，支持图层绘制、洋葱皮、逐帧播放、旋转创作、导出项目，纯个人开源非盈利工具，禁止商用牟利。">
-    <meta name="keywords" content="费纳奇镜,费那奇镜,费纳奇镜动画,费那奇镜制作,动画绘制工具,在线动画创作,旋转动画">
-    
-    <!-- 🔤 英文SEO标签（新增，英文用户核心） -->
-    <title>Phenakistiscope Animation Tool v12.3 - Free Online Phenakistiscope Maker</title>
-    <meta name="description" content="Free online Phenakistiscope animation tool - No installation needed. Create, edit, and export phenakistiscope animations with layers, onion skin, and frame-by-frame playback. Open-source & non-commercial.">
-    <meta name="keywords" content="phenakistiscope, phenakistiscope animation, online phenakistiscope tool, phenakistiscope maker, animation creator, free animation tool">
-    
-    <!-- 🚀 多语言声明（告诉搜索引擎支持中英文，优先推给对应语言用户） -->
-    <link rel="alternate" hreflang="zh-CN" href="https://你的地址.pages.dev" />
-    <link rel="alternate" hreflang="en" href="https://你的地址.pages.dev" />
-    <link rel="alternate" hreflang="x-default" href="https://你的地址.pages.dev" />
-    
-    <!-- 📱 英文社交媒体分享优化（英文用户分享时预览正确） -->
-    <meta property="og:title" content="Phenakistiscope Animation Tool v12.3 - Free Online Maker">
-    <meta property="og:description" content="Create phenakistiscope animations online for free. Open-source tool with layers, onion skin, and export features.">
-    <meta property="og:type" content="tool">
-    <meta property="og:locale" content="en_US">
-    
-    <!-- 其他原有标签（robots、author、theme-color等，保留不变） -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">    
+    <title>费纳奇镜动画绘制工具 v12.13 (触屏检测优化版)</title>
+    <meta name="description" content="免费在线费纳奇镜动画绘制工具，iPad手势优化，智能快捷键面板。">
     <meta name="robots" content="index, follow, all">
     <meta name="author" content="Elephantzoo">
-    <meta name="format-detection" content="telephone=no">
-    <meta name="theme-color" content="#181818">
-
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    <!-- 原有样式代码... -->
+    
+<style>
+    :root {
+        --bg-color: #181818; --panel-color: #252525; --item-color: #333;
+        --text-color: #e0e0e0; --accent-color: #00bcd4; --danger-color: #e74c3c;
+    }
+    body { 
+        font-family: 'Segoe UI', sans-serif; 
+        background-color: var(--bg-color); 
+        color: var(--text-color); 
+        margin: 0; 
+        display: flex; 
+        flex-direction: row;
+        height: 100vh; 
+        height: 100dvh; 
+        overflow: hidden; 
+        user-select: none; 
+        -webkit-user-select: none;
+        touch-action: none; 
+    }
 
-    <style>
-        :root {
-            --bg-color: #181818; --panel-color: #252525; --item-color: #333;
-            --text-color: #e0e0e0; --accent-color: #00bcd4; --danger-color: #e74c3c;
-        }
-        /* 核心修复：防止浏览器劫持触控 */
-        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; display: flex; height: 100vh; overflow: hidden; user-select: none; touch-action: none; }
-        
-        /* 弹窗样式 START */
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.75); z-index: 2000; display: flex; justify-content: center; align-items: center; backdrop-filter: blur(3px); animation: fadeIn 0.3s ease; }
-        .modal-content { background: #252525; padding: 25px; border-radius: 8px; width: 90%; max-width: 420px; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.6); border: 1px solid #444; color: #e0e0e0; animation: slideUp 0.3s ease; }
-        .close-modal { position: absolute; top: 12px; right: 15px; background: none; border: none; color: #888; font-size: 28px; cursor: pointer; padding: 0; line-height: 1; transition: 0.2s; width: auto; text-align: right;}
-        .close-modal:hover { color: #fff; transform: scale(1.1); background: none; }
-        .modal-header { font-size: 18px; font-weight: bold; margin-bottom: 20px; color: var(--accent-color); border-bottom: 1px solid #333; padding-bottom: 10px; }
-        .modal-body p { margin: 12px 0; font-size: 14px; line-height: 1.6; }
-        .modal-body a { color: var(--accent-color); text-decoration: none; transition: 0.2s; border-bottom: 1px dashed rgba(0,188,212,0.3); }
-        .modal-body a:hover { text-decoration: none; border-bottom-style: solid; color: #fff; }
-        .disclaimer { color: #aaa; font-size: 13px; background: rgba(0,0,0,0.2); padding: 12px; border-radius: 4px; border-left: 3px solid var(--danger-color); margin-top: 15px; }
-        .disclaimer strong { color: #ccc; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        /* 弹窗样式 END */
+    body.layout-left .sidebar { order: -1; border-right: 1px solid #333; border-left: none; box-shadow: 4px 0 10px rgba(0,0,0,0.3); }
+    body.layout-left .viewport { order: 1; }
+    
+    /* Modal Styles */
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.75); z-index: 3000; display: flex; justify-content: center; align-items: center; backdrop-filter: blur(3px); animation: fadeIn 0.3s ease; }
+    .modal-content { background: #252525; padding: 25px; border-radius: 8px; width: 90%; max-width: 420px; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.6); border: 1px solid #444; color: #e0e0e0; animation: slideUp 0.3s ease; }
+    .close-modal { position: absolute; top: 12px; right: 15px; background: none; border: none; color: #888; font-size: 28px; cursor: pointer; padding: 0; line-height: 1; transition: 0.2s; width: auto; text-align: right;}
+    .close-modal:hover { color: #fff; transform: scale(1.1); background: none; }
+    .modal-header { font-size: 18px; font-weight: bold; margin-bottom: 20px; color: var(--accent-color); border-bottom: 1px solid #333; padding-bottom: 10px; }
+    .modal-body p { margin: 12px 0; font-size: 14px; line-height: 1.6; }
+    .modal-body a { color: var(--accent-color); text-decoration: none; transition: 0.2s; border-bottom: 1px dashed rgba(0,188,212,0.3); }
+    .disclaimer { color: #aaa; font-size: 13px; background: rgba(0,0,0,0.2); padding: 12px; border-radius: 4px; border-left: 3px solid var(--danger-color); margin-top: 15px; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
-        .viewport { 
-            flex: 1; position: relative; background-color: #111; overflow: hidden; 
-            background-image: linear-gradient(45deg, #1a1a1a 25%, transparent 25%), linear-gradient(-45deg, #1a1a1a 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #1a1a1a 75%), linear-gradient(-45deg, transparent 75%, #1a1a1a 75%); 
-            background-size: 20px 20px; cursor: none; min-width: 300px; touch-action: none; 
-        }
-        .viewport.panning { cursor: grab !important; }
-        .viewport.panning:active { cursor: grabbing !important; }
-        .viewport.rotating { cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path fill='%23fff' d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z'/></svg>"), grab !important; }
-        .viewport.erasing { cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' fill='none' stroke='%23e74c3c' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2'/></svg>") 12 12, auto !important; }
-        #mainCanvas { display: block; width: 100%; height: 100%; touch-action: none; }
-        .save-indicator { position: absolute; top: 10px; left: 10px; z-index: 100; font-size: 12px; opacity: 0.8; pointer-events: none; display: flex; align-items: center; gap: 5px; background: rgba(0,0,0,0.5); padding: 4px 8px; border-radius: 20px; }
-        .dot { width: 8px; height: 8px; border-radius: 50%; background: #555; }
-        .dot.unsaved { background: var(--danger-color); box-shadow: 0 0 5px var(--danger-color); }
-        .dot.saved { background: var(--accent-color); }
-        .sidebar { width: 340px; background-color: var(--panel-color); border-left: 1px solid #333; display: flex; flex-direction: column; z-index: 10; box-shadow: -4px 0 10px rgba(0,0,0,0.3); cursor: default; }
-        .scroll-area { flex: 1; overflow-y: auto; padding: 15px; }
-        .scroll-area::-webkit-scrollbar { width: 5px; background: #222; }
-        .scroll-area::-webkit-scrollbar-thumb { background: #555; border-radius: 3px; }
-        .panel-section { margin-bottom: 20px; background: var(--item-color); padding: 10px; border-radius: 6px; }
-        .section-header { font-size: 11px; font-weight: bold; text-transform: uppercase; color: #888; border-bottom: 1px solid #444; padding-bottom: 5px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
-        .row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
-        .btn-group { display: flex; width: 100%; gap: 1px; background: #222; border-radius: 4px; overflow: hidden; }
-        .btn-group-full { display:flex; flex-wrap: wrap; gap:5px; margin-top:8px;}
-        button, .btn-label { background-color: #444; color: #ddd; border: none; padding: 6px 10px; cursor: pointer; flex: 1; font-size: 12px; transition: 0.1s; text-align: center; display: inline-block; line-height: normal; border-radius: 3px; }
-        button:hover, .btn-label:hover { background-color: #555; }
-        button:disabled { background-color: #333; color: #777; cursor: not-allowed; }
-        button.active, .btn-label.active { background-color: var(--accent-color); color: #000; font-weight: bold; }
-        button.small-btn { padding: 4px 8px; flex: 0 0 auto; }
-        button.dir-btn.active { background: var(--danger-color); color:#fff; }
-        .btn-label.json-btn { background: #9b59b6; color:#fff; } .btn-label.json-btn:hover { background: #8e44ad; }
-        button.json-btn { background: #9b59b6; color:#fff; } button.json-btn:hover { background: #8e44ad; }
-        button.reset-btn { background: #e74c3c; color:#fff; } button.reset-btn:hover { background: #c0392b; }
-        input[type="range"] { flex: 1; height: 4px; accent-color: var(--accent-color); background: #555; border-radius: 2px; -webkit-appearance: none; appearance: none; padding:0; margin:0;}
-        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 12px; height: 12px; border-radius: 50%; background: var(--accent-color); cursor: pointer; }
-        input[type="range"]::-moz-range-thumb { width: 12px; height: 12px; border-radius: 50%; background: var(--accent-color); cursor: pointer; border:none; }
-        input[type="number"] { width: 40px; background: #222; border: 1px solid #444; color: white; border-radius: 3px; padding: 3px; text-align: center; }
-        input[type="file"], input[type="checkbox"].visually-hidden { opacity:0; width:0; height:0; position:absolute; }
-        .layer-list { display: flex; flex-direction: column; gap: 4px; max-height: 180px; overflow-y: auto; background: #222; border-radius: 4px; padding: 4px; }
-        .layer-item { display: flex; align-items: center; gap: 8px; padding: 6px; background: #333; color: #aaa; cursor: grab; border: 1px solid transparent; border-radius: 3px; transition: background-color 0.1s; }
-        .layer-item.active { background: #444; color: #fff; border-color: var(--accent-color); }
-        .layer-item.drag-over { background-color: var(--accent-color); opacity: 0.5; }
-        .layer-item.dragging { opacity: 0.4; }
-        .layer-vis { cursor: pointer; width: 20px; text-align: center; }
-        .layer-name { flex: 1; font-size: 12px; user-select: none; }
-        .current-layer-input { flex:1; background:#333; border:1px solid #555; color:#fff; font-size:12px; padding:2px 4px; border-radius:2px; outline:none; text-align: left; min-width: 100px; }
-        .color-input-wrapper { width: 24px; height: 24px; border: none; background: none; padding: 0; cursor: pointer; border-radius: 4px; overflow: hidden; }
-        input[type="color"] { -webkit-appearance: none; -moz-appearance: none; appearance: none; width: 32px; height: 32px; background-color: transparent; border: none; cursor: pointer; position: relative; top: -4px; left: -4px; }
-        input[type="color"]::-webkit-color-swatch { border-radius: 4px; border: 2px solid #555; }
-        input[type="color"]::-moz-color-swatch { border-radius: 4px; border: 2px solid #555; }
-        .shortcut-panel { position: absolute; bottom: 10px; left: 10px; right: 10px; background: rgba(0,0,0,0.9); padding: 8px 15px; border-radius: 6px; font-size: 12px; color: #ccc; pointer-events: none; border: 1px solid #555; z-index: 99; display: flex; flex-wrap: wrap; gap: 18px; justify-content: center; }
-        .shortcut-panel span { display: inline-block; }
-        .shortcut-panel strong { color: var(--accent-color); font-weight: normal; padding: 0 2px; }
-    </style>
+    .viewport { 
+        flex: 1; position: relative; background-color: #111; overflow: hidden; 
+        background-image: linear-gradient(45deg, #1a1a1a 25%, transparent 25%), linear-gradient(-45deg, #1a1a1a 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #1a1a1a 75%), linear-gradient(-45deg, transparent 75%, #1a1a1a 75%); 
+        background-size: 20px 20px; cursor: none; min-width: 300px; touch-action: none; order: 0;
+    }
+    .viewport.panning { cursor: grab !important; }
+    .viewport.panning:active { cursor: grabbing !important; }
+    .viewport.rotating { cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path fill='%23fff' d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z'/></svg>"), grab !important; }
+    .viewport.erasing { cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' fill='none' stroke='%23e74c3c' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2'/></svg>") 12 12, auto !important; }
+    #mainCanvas { display: block; width: 100%; height: 100%; touch-action: none; }
+    .save-indicator { position: absolute; top: 10px; left: 10px; z-index: 100; font-size: 12px; opacity: 0.8; pointer-events: none; display: flex; align-items: center; gap: 5px; background: rgba(0,0,0,0.5); padding: 4px 8px; border-radius: 20px; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: #555; }
+    .dot.unsaved { background: var(--danger-color); box-shadow: 0 0 5px var(--danger-color); }
+    .dot.saved { background: var(--accent-color); }
+    
+    .sidebar { width: 340px; background-color: var(--panel-color); border-left: 1px solid #333; display: flex; flex-direction: column; z-index: 10; box-shadow: -4px 0 10px rgba(0,0,0,0.3); cursor: default; order: 1; }
+    .scroll-area { flex: 1; overflow-y: auto; padding: 15px; }
+    .scroll-area::-webkit-scrollbar { width: 5px; background: #222; }
+    .scroll-area::-webkit-scrollbar-thumb { background: #555; border-radius: 3px; }
+    .panel-section { margin-bottom: 20px; background: var(--item-color); padding: 10px; border-radius: 6px; }
+    .section-header { font-size: 11px; font-weight: bold; text-transform: uppercase; color: #888; border-bottom: 1px solid #444; padding-bottom: 5px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+    
+    .row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; flex-wrap: nowrap; }
+    .row > span, .row > label { white-space: nowrap; flex-shrink: 0; }
+    
+    .btn-group { display: flex; width: 100%; gap: 1px; background: #222; border-radius: 4px; overflow: hidden; }
+    .btn-group-full { display:flex; flex-wrap: wrap; gap:5px; margin-top:8px;}
+    
+    /* Buttons */
+    button, .btn-label { 
+        background-color: #444; color: #ddd; border: none; padding: 6px 10px; cursor: pointer; flex: 1; 
+        font-size: 12px; transition: 0.1s; text-align: center; display: inline-block; line-height: normal; border-radius: 3px;
+        white-space: nowrap; flex-shrink: 0; outline: none !important; -webkit-tap-highlight-color: transparent;
+    }
+    button:focus, button:active { outline: none !important; border: none; } 
+    button:hover, .btn-label:hover { background-color: #555; }
+    button:disabled { background-color: #333; color: #777; cursor: not-allowed; }
+    button.active, .btn-label.active { background-color: var(--accent-color); color: #000; font-weight: bold; }
+    button.small-btn { padding: 4px 8px; flex: 0 0 auto; }
+    button.dir-btn.active { background: var(--danger-color); color:#fff; }
+    .btn-label.json-btn { background: #9b59b6; color:#fff; } .btn-label.json-btn:hover { background: #8e44ad; }
+    button.json-btn { background: #9b59b6; color:#fff; } button.json-btn:hover { background: #8e44ad; }
+    button.reset-btn { background: #e74c3c; color:#fff; } button.reset-btn:hover { background: #c0392b; }
+    
+    /* Inputs */
+    input:focus, input:active { outline: none !important; }
+    input[type="range"] {
+        -webkit-appearance: none; appearance: none;
+        width: 100%; height: 30px; background: transparent; cursor: pointer;
+        padding: 0; margin: 0; vertical-align: middle; flex-grow: 1; min-width: 50px; outline: none !important;
+    }
+    input[type="range"]::-webkit-slider-runnable-track { width: 100%; height: 4px; background: #555; border-radius: 2px; border: none; }
+    input[type="range"]::-moz-range-track { width: 100%; height: 4px; background: #555; border-radius: 2px; border: none; }
+    input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%; background: var(--accent-color); margin-top: -6px; box-shadow: 0 0 4px rgba(0,0,0,0.5); }
+    input[type="range"]::-moz-range-thumb { border: none; height: 16px; width: 16px; border-radius: 50%; background: var(--accent-color); box-shadow: 0 0 4px rgba(0,0,0,0.5); }
+    input[type="checkbox"] { outline: none !important; }
+    input[type="text"] { flex:1; background:#333; border:1px solid #555; color:#fff; font-size:12px; padding:2px 4px; border-radius:2px; outline:none; text-align: left; min-width: 100px; }
+    input[type="file"], input[type="checkbox"].visually-hidden { opacity:0; width:0; height:0; position:absolute; }
+    .color-input-wrapper { width: 24px; height: 24px; border: none; background: none; padding: 0; cursor: pointer; border-radius: 4px; overflow: hidden; }
+    input[type="color"] { -webkit-appearance: none; -moz-appearance: none; appearance: none; width: 32px; height: 32px; background-color: transparent; border: none; cursor: pointer; position: relative; top: -4px; left: -4px; outline: none; }
+    input[type="color"]::-webkit-color-swatch { border-radius: 4px; border: 2px solid #555; }
+    input[type="color"]::-moz-color-swatch { border-radius: 4px; border: 2px solid #555; }
+
+    /* Layer List */
+    .layer-list { display: flex; flex-direction: column; gap: 4px; max-height: 180px; overflow-y: auto; background: #222; border-radius: 4px; padding: 4px; }
+    .layer-item { display: flex; align-items: center; gap: 8px; padding: 6px; background: #333; color: #aaa; cursor: grab; border: 1px solid transparent; border-radius: 3px; transition: background-color 0.1s; }
+    .layer-item.active { background: #444; color: #fff; border-color: var(--accent-color); }
+    .layer-item.drag-over { background-color: var(--accent-color); opacity: 0.5; }
+    .layer-item.dragging { opacity: 0.4; }
+    .layer-vis { cursor: pointer; width: 20px; text-align: center; }
+    .layer-name { flex: 1; font-size: 12px; user-select: none; }
+
+    /* Shortcut Panel */
+    .shortcut-panel { 
+        position: absolute; 
+        bottom: calc(20px + env(safe-area-inset-bottom)); 
+        left: 10px; right: 10px; 
+        background: rgba(0,0,0,0.9); padding: 8px 15px; border-radius: 6px; 
+        font-size: 12px; color: #ccc; 
+        border: 1px solid #555; 
+        z-index: 2000; 
+        transition: width 0.2s, right 0.2s, left 0.2s;
+        display: flex; flex-direction: column; gap: 5px;
+        pointer-events: auto;
+    }
+    .shortcut-header { 
+        display: flex; justify-content: space-between; align-items: center; 
+        border-bottom: 1px solid #444; padding-bottom: 4px; margin-bottom: 4px; font-weight: bold; color: var(--accent-color); font-size: 11px;
+    }
+    .shortcut-toggle { background: none; border: none; color: #888; cursor: pointer; font-size: 14px; padding: 0 8px; height: auto; width: auto; line-height: 1; }
+    .shortcut-toggle:hover { color: #fff; background: none; }
+    .shortcut-content { display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; }
+    .shortcut-content span { display: inline-block; }
+    .shortcut-content strong { color: var(--accent-color); font-weight: normal; padding: 0 2px; }
+    
+    /* Collapsed State */
+    .shortcut-panel.collapsed .shortcut-content { display: none; }
+    .shortcut-panel.collapsed { width: 140px; left: auto; right: 10px; }
+
+    @media (max-width: 1024px) {
+        .sidebar { width: 280px; }
+        button { min-height: 36px; margin-bottom: 2px; }
+    }
+</style>
 </head>
 <body>
-    <!-- 启动弹窗（新增英文翻译，不影响中文阅读） -->
-<div id="welcomeModal" class="modal-overlay">
-    <div class="modal-content">
-        <button class="close-modal" id="closeModalBtn">×</button>
-        <div class="modal-header">关于本项目 / About This Project</div>
-        <div class="modal-body">
-            <p>▸ 开发者 / Developer：Elephantzoo</p>
-            <p>▸ 项目开源 / Open Source：<a href="https://github.com/ElephantZoo/-" target="_blank">GitHub Repository</a></p>
-            <p>▸ 交流反馈 / Feedback：<a href="https://www.xiaohongshu.com/user/profile/6103db4f00000000010074ba" target="_blank">小红书@半扇🐘</a> (UID: 49697709596)</p>
-            
-            <div class="disclaimer">
-                本网站为个人非盈利开源项目 / This is a personal open-source non-commercial project.<br>
-                ✅ <strong>全站功能 / 创作内容 免费使用</strong> / All features & creations are free for personal use.<br>
-                ❌ <strong>严禁任何商用、盈利、倒卖等商业牟利行为</strong> / Commercial use, profit-making, or resale is strictly prohibited.<br>
-                <div style="margin-top:8px; font-style: italic;">感谢使用 / Thank you for using ✨</div>
+    <div id="welcomeModal" class="modal-overlay">
+        <div class="modal-content">
+            <button class="close-modal" id="closeModalBtn">×</button>
+            <div class="modal-header">关于本项目 / About This Project</div>
+            <div class="modal-body">
+                <p>▸ 开发者 / Developer：Elephantzoo</p>
+                <p>▸ 项目开源 / Open Source：<a href="https://github.com/ElephantZoo/-" target="_blank">GitHub Repository</a></p>
+                <p>▸ 交流反馈 / Feedback：<a href="https://www.xiaohongshu.com/user/profile/6103db4f00000000010074ba" target="_blank">小红书@半扇🐘</a> (UID: 49697709596)</p>
+                <div class="disclaimer">
+                    本网站为个人非盈利开源项目 / This is a personal open-source non-commercial project.<br>
+                    ✅ <strong>全站功能 / 创作内容 免费使用</strong> / All features & creations are free for personal use.<br>
+                    ❌ <strong>严禁任何商用、盈利、倒卖等商业牟利行为</strong> / Commercial use, profit-making, or resale is strictly prohibited.<br>
+                    <div style="margin-top:8px; font-style: italic;">感谢使用 / Thank you for using ✨</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<div class="viewport" id="viewport">
+    <div class="save-indicator"> <div class="dot saved" id="statusDot"></div> <span id="statusText">已保存</span> </div>
+    <canvas id="mainCanvas"></canvas>
+    
+    <div class="shortcut-panel collapsed" id="shortcutPanel">
+        <div class="shortcut-header">
+            <span id="shortcutTitle">快捷键 / Shortcuts</span>
+            <button class="shortcut-toggle" id="shortcutToggleBtn">▲</button>
+        </div>
+        <div class="shortcut-content" id="shortcutContent">
+            <!-- Content generated by JS -->
+        </div>
+    </div>
+</div>
+<div class="sidebar">
+    <div class="scroll-area">
+        <div class="panel-section">
+            <div class="section-header">全局控制</div>
+            <div class="row" style="margin-bottom:8px;">
+                <span style="font-size:12px; flex-shrink: 0;">项目名称:</span>
+                <input type="text" id="projectNameInput" class="current-layer-input" style="flex-grow:1;" placeholder="为你的项目命名">
+            </div>
+            <div class="btn-group" style="margin-bottom:8px;"> <button id="undoBtn">↩ 撤销</button> <button id="redoBtn">↪ 重做</button> </div>
+            <div class="btn-group" style="margin-bottom:8px;">
+                <button id="playbackModeBtn">逐格模式</button> <button id="playBtn">▶ 播放</button>
+            </div>
+            <div class="row">
+                <span style="font-size:12px">速度:</span> <input type="range" id="fpsRange" min="1" max="60" value="12">
+                <span id="fpsVal" style="font-size:11px; width:20px;">12</span>
+                <button id="rotateDirBtn" class="dir-btn" title="切换旋转方向">↺ 反向</button>
+            </div>
+            <div class="row">
+                <button id="layoutToggleBtn" class="small-btn">⇋ 切换左/右布局</button>
+            </div>
+        </div>
+        <div class="panel-section">
+            <div class="section-header">
+                <input type="text" id="currentLayerInput" class="current-layer-input" placeholder="当前图层">
+                <div>
+                    <button class="small-btn" id="addLayerBtn" title="新建图层">+</button>
+                    <button class="small-btn" id="delLayerBtn" title="删除图层">-</button>
+                    <button class="small-btn" id="copyLayerBtn" title="复制图层">⧉</button>
+                    <button class="small-btn" id="clearLayerBtn" title="清空图层">🗑️</button>
+                </div>
+            </div>
+            <div class="row">
+                <div class="color-input-wrapper" title="修改图层颜色"><input type="color" id="layerColorInput"></div>
+                <div class="btn-group">
+                    <button id="modeFillBtn" title="填充模式 (B)">填充</button> <button id="modeStrokeBtn" title="路径模式 (B)">路径</button> <button id="toolEraserBtn" title="橡皮擦 (E)">擦除</button>
+                </div>
+            </div>
+            <div class="row">
+                <span style="font-size:12px; flex-shrink: 0;">透明度:</span>
+                <input type="range" id="layerOpacity" min="0" max="1" step="0.05" value="1">
+                <span id="layerOpacityVal" style="font-size:11px; width:28px;">1.0</span>
+            </div>
+            <div class="layer-list" id="layerList"></div>
+        </div>
+        <div class="panel-section">
+            <div class="section-header">画笔</div>
+            <div class="row">
+                <span style="font-size:12px" id="brushSizeLabel">粗细:</span>
+                <input type="range" id="brushSize" min="1" max="100" value="10">
+                <span id="brushSizeVal" style="font-size:11px; width:20px;">10</span>
+            </div>
+        </div>
+        <div class="panel-section">
+            <div class="section-header">视图 (View)</div>
+            <div class="row"> <button id="resetViewBtn">复位视图</button> </div>
+            <div class="row" style="justify-content: space-between;">
+                <label for="snapToggle" style="font-size:12px; cursor:pointer;">中线吸附</label> <input type="checkbox" id="snapToggle" checked>
+            </div>
+            <div class="row">
+                <label for="backgroundColorInput" style="font-size:12px; cursor:pointer;">画布颜色</label>
+                <div class="color-input-wrapper" title="修改画布背景颜色"><input type="color" id="backgroundColorInput"></div>
+            </div>
+            <div class="row">
+                <span style="font-size:12px">旋转</span> 
+                <input type="range" id="rotationSlider" min="0" max="360" value="0">
+            </div>
+            <div class="row" style="justify-content: center; gap: 10px;">
+                <button id="rotLeftBtn" class="small-btn" style="flex:1;">←</button>
+                <button id="rotRightBtn" class="small-btn" style="flex:1;">→</button>
+            </div>
+        </div>
+        <div class="panel-section">
+            <div class="section-header">辅助与完整导出</div>
+            <div class="row" style="align-items: center;">
+                <label for="onionToggle" style="font-size:12px; cursor:pointer; flex-shrink: 0;">洋葱皮</label>
+                <input type="checkbox" id="onionToggle" checked>
+                <div style="display: flex; gap: 5px; margin-left: auto;">
+                    <label for="onionBeforeToggle" class="btn-label small-btn" style="padding: 2px 6px; flex:none;">前一帧</label>
+                    <input type="checkbox" id="onionBeforeToggle" class="visually-hidden" checked>
+                    <label for="onionAfterToggle" class="btn-label small-btn" style="padding: 2px 6px; flex:none;">后一帧</label>
+                    <input type="checkbox" id="onionAfterToggle" class="visually-hidden" checked>
+                </div>
+            </div>
+            <div class="row">
+                <span style="font-size:12px; flex-shrink: 0;">洋葱皮透明度:</span>
+                <input type="range" id="onionOpacity" min="0" max="1" step="0.05" value="0.5">
+                <span id="onionOpacityVal" style="font-size:11px; width:28px;">0.5</span>
+            </div>
+            <div class="row">
+                <button id="onionLayerBtn" class="small-btn" title="切换洋葱皮显示在画面最上层/最下层">洋葱皮 ▲ 置顶</button>
+            </div>
+            <div class="row" style="justify-content: space-between;">
+                <span style="font-size:12px">扇形数:</span>
+                <div style="display:flex; align-items:center; background:#222; border-radius:3px; padding:2px;">
+                    <button id="sliceDecBtn" class="small-btn" style="width:30px; margin:0;">-</button>
+                    <span id="sliceValDisplay" style="width:30px; text-align:center; font-size:12px;">12</span>
+                    <button id="sliceIncBtn" class="small-btn" style="width:30px; margin:0;">+</button>
+                </div>
+            </div>
+            <div class="btn-group-full">
+                <button id="exportJsonBtn" class="json-btn">导出项目(ZIP)</button>
+            </div>
+            <div class="btn-group-full">
+                <label for="importJsonInput" class="btn-label json-btn" style="flex-grow: 2;">导入项目 (JSON/ZIP)</label>
+                <input type="file" id="importJsonInput" accept=".json,.zip"> <button id="resetAllBtn" class="reset-btn">重置所有</button>
             </div>
         </div>
     </div>
 </div>
-
-    <div class="viewport" id="viewport">
-        <div class="save-indicator"> <div class="dot saved" id="statusDot"></div> <span id="statusText">已保存</span> </div>
-        <canvas id="mainCanvas"></canvas>
-        <div class="shortcut-panel">
-            <span><strong>空格</strong> 拖拽 | <strong>R</strong> 旋转 | <strong>B</strong> 画笔 | <strong>E</strong> 橡皮擦</span>
-            <span><strong>滚轮</strong> 缩放 | <strong>Shift+滚轮</strong> 旋转</span>
-            <span><strong>← →</strong> 微调旋转 | <strong>[ ]</strong> 画笔粗细</span>
-            <span><strong>Ctrl+Z</strong> 撤销 | <strong>Ctrl+Y</strong> 重做 | <strong>Ctrl+0</strong> 复位视图</span>
-        </div>
-    </div>
-    <div class="sidebar">
-        <div class="scroll-area">
-            <div class="panel-section">
-                <div class="section-header">全局控制</div>
-                <div class="row" style="margin-bottom:8px;">
-                    <span style="font-size:12px; flex-shrink: 0;">项目名称:</span>
-                    <input type="text" id="projectNameInput" class="current-layer-input" style="flex-grow:1;" placeholder="为你的项目命名">
-                </div>
-                <div class="btn-group" style="margin-bottom:8px;"> <button id="undoBtn">↩ 撤销</button> <button id="redoBtn">↪ 重做</button> </div>
-                <div class="btn-group" style="margin-bottom:8px;">
-                    <button id="playbackModeBtn">逐格模式</button> <button id="playBtn">▶ 播放</button>
-                </div>
-                <div class="row">
-                    <span style="font-size:12px">速度:</span> <input type="range" id="fpsRange" min="1" max="60" value="12">
-                    <span id="fpsVal" style="font-size:11px; width:20px;">12</span>
-                    <button id="rotateDirBtn" class="dir-btn" title="切换旋转方向">↺ 反向</button>
-                </div>
-            </div>
-            <div class="panel-section">
-                <div class="section-header">
-                    <input type="text" id="currentLayerInput" class="current-layer-input" placeholder="当前图层">
-                    <div>
-                        <button class="small-btn" id="addLayerBtn" title="新建图层">+</button>
-                        <button class="small-btn" id="delLayerBtn" title="删除图层">-</button>
-                        <button class="small-btn" id="copyLayerBtn" title="复制图层">⧉</button>
-                        <button class="small-btn" id="clearLayerBtn" title="清空图层">🗑️</button>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="color-input-wrapper" title="修改图层颜色"><input type="color" id="layerColorInput"></div>
-                    <div class="btn-group">
-                        <button id="modeFillBtn" title="填充模式 (B)">填充</button> <button id="modeStrokeBtn" title="路径模式 (B)">路径</button> <button id="toolEraserBtn" title="橡皮擦 (E)">擦除</button>
-                    </div>
-                </div>
-                <div class="row">
-                    <span style="font-size:12px; flex-shrink: 0;">透明度:</span>
-                    <input type="range" id="layerOpacity" min="0" max="1" step="0.05" value="1">
-                    <span id="layerOpacityVal" style="font-size:11px; width:28px;">1.0</span>
-                </div>
-                <div class="layer-list" id="layerList"></div>
-            </div>
-            <div class="panel-section">
-                <div class="section-header">画笔</div>
-                <div class="row">
-                    <span style="font-size:12px" id="brushSizeLabel">粗细:</span>
-                    <input type="range" id="brushSize" min="1" max="100" value="10">
-                    <span id="brushSizeVal" style="font-size:11px; width:20px;">10</span>
-                </div>
-            </div>
-            <div class="panel-section">
-                <div class="section-header">视图 (View)</div>
-                <div class="row"> <button id="resetViewBtn">复位视图</button> </div>
-                <div class="row" style="justify-content: space-between;">
-                    <label for="snapToggle" style="font-size:12px; cursor:pointer;">中线吸附</label> <input type="checkbox" id="snapToggle" checked>
-                </div>
-                <div class="row">
-                    <label for="backgroundColorInput" style="font-size:12px; cursor:pointer;">画布颜色</label>
-                    <div class="color-input-wrapper" title="修改画布背景颜色"><input type="color" id="backgroundColorInput"></div>
-                </div>
-                <div class="row">
-                    <span style="font-size:12px">旋转</span> <input type="range" id="rotationSlider" min="0" max="360" value="0">
-                </div>
-            </div>
-            <div class="panel-section">
-                <div class="section-header">辅助与完整导出</div>
-                <div class="row" style="align-items: center;">
-                    <label for="onionToggle" style="font-size:12px; cursor:pointer; flex-shrink: 0;">洋葱皮</label>
-                    <input type="checkbox" id="onionToggle" checked>
-                    <div style="display: flex; gap: 5px; margin-left: auto;">
-                        <label for="onionBeforeToggle" class="btn-label small-btn" style="padding: 2px 6px; flex:none;">前一帧</label>
-                        <input type="checkbox" id="onionBeforeToggle" class="visually-hidden" checked>
-                        <label for="onionAfterToggle" class="btn-label small-btn" style="padding: 2px 6px; flex:none;">后一帧</label>
-                        <input type="checkbox" id="onionAfterToggle" class="visually-hidden" checked>
-                    </div>
-                </div>
-                <div class="row">
-                    <span style="font-size:12px; flex-shrink: 0;">洋葱皮透明度:</span>
-                    <input type="range" id="onionOpacity" min="0" max="1" step="0.05" value="0.5">
-                    <span id="onionOpacityVal" style="font-size:11px; width:28px;">0.5</span>
-                </div>
-                <div class="row">
-                    <button id="onionLayerBtn" class="small-btn" title="切换洋葱皮显示在画面最上层/最下层">洋葱皮 ▲ 置顶</button>
-                </div>
-                <div class="row"> <span style="font-size:12px">扇形数</span> <input type="number" id="sliceCount" value="12" min="4" max="24"> </div>
-                <div class="btn-group-full">
-                    <button id="exportJsonBtn" class="json-btn">导出项目(ZIP)</button>
-                </div>
-                <div class="btn-group-full">
-                    <label for="importJsonInput" class="btn-label json-btn" style="flex-grow: 2;">导入项目 (JSON/ZIP)</label>
-                    <input type="file" id="importJsonInput" accept=".json,.zip"> <button id="resetAllBtn" class="reset-btn">重置所有</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
 <script>
     const CONFIG = { baseSize: 500, maxHistory: 50, pathSimplificationThreshold: 1.5 };
 
@@ -260,20 +314,73 @@
         dragStartAngle: 0, dragStartViewRot: 0, cursorWorldX: 0, cursorWorldY: 0, cursorScreenX: 0, cursorScreenY: 0, isCursorInCanvas: false,
         onionSkins: { enabled: true, showBefore: true, showAfter: true, opacity: 0.5 },
         onionOnTop: true,
-        snapToMidline: true, hasUnsavedChanges: false, dpr: 1, fps: 12
+        snapToMidline: true, hasUnsavedChanges: false, dpr: 1, fps: 12,
+        isGesturing: false
     };
 
     const DOM = {};
     let undoStack = [], redoStack = [];
 
     function init() {
-        const ids = [ "viewport", "mainCanvas", "importJsonInput", "onionToggle", "onionOpacity", "onionOpacityVal", "fpsRange", "fpsVal", "rotationSlider", "currentLayerInput", "layerList", "brushSizeLabel", "brushSize", "brushSizeVal", "statusDot", "statusText", "playBtn", "playbackModeBtn", "sliceCount", "snapToggle", "layerColorInput", "layerOpacity", "layerOpacityVal", "modeFillBtn", "modeStrokeBtn", "toolEraserBtn", "undoBtn", "redoBtn", "addLayerBtn", "delLayerBtn", "clearLayerBtn", "resetViewBtn", "exportJsonBtn", "resetAllBtn", "rotateDirBtn", "backgroundColorInput", "onionLayerBtn", "projectNameInput", "copyLayerBtn", "onionBeforeToggle", "onionAfterToggle", "welcomeModal", "closeModalBtn" ];
+        const ids = [ "viewport", "mainCanvas", "importJsonInput", "onionToggle", "onionOpacity", "onionOpacityVal", "fpsRange", "fpsVal", "rotationSlider", "currentLayerInput", "layerList", "brushSizeLabel", "brushSize", "brushSizeVal", "statusDot", "statusText", "playBtn", "playbackModeBtn", "snapToggle", "layerColorInput", "layerOpacity", "layerOpacityVal", "modeFillBtn", "modeStrokeBtn", "toolEraserBtn", "undoBtn", "redoBtn", "addLayerBtn", "delLayerBtn", "clearLayerBtn", "resetViewBtn", "exportJsonBtn", "resetAllBtn", "rotateDirBtn", "backgroundColorInput", "onionLayerBtn", "projectNameInput", "copyLayerBtn", "onionBeforeToggle", "onionAfterToggle", "welcomeModal", "closeModalBtn", "layoutToggleBtn", "rotLeftBtn", "rotRightBtn", "sliceDecBtn", "sliceIncBtn", "sliceValDisplay", "shortcutPanel", "shortcutContent", "shortcutToggleBtn", "shortcutTitle" ];
         ids.forEach(id => DOM[id] = document.getElementById(id));
         DOM.ctx = DOM.mainCanvas.getContext('2d');
         state.dpr = window.devicePixelRatio || 1;
+        
+        // --- 全局自动失焦 ---
+        document.addEventListener('click', (e) => {
+            const t = e.target;
+            if (t.tagName === 'BUTTON' || t.closest('button')) {
+                (t.tagName === 'BUTTON' ? t : t.closest('button')).blur();
+            }
+            if (t.tagName === 'INPUT' && t.type === 'checkbox') {
+                t.blur();
+            }
+        }, true);
+        
+        document.querySelectorAll('input[type="range"]').forEach(el => {
+            el.addEventListener('pointerup', () => el.blur());
+            el.addEventListener('touchend', () => el.blur());
+            el.addEventListener('change', () => el.blur());
+        });
+
+        // 核心修复：基于触屏能力的布局检测
+        const isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+        if (isTouch) {
+            document.body.classList.add('layout-left');
+        }
+
+        initShortcutPanel(); 
         resizeCanvas(); centerView(); addLayer("图层 1");
         new ResizeObserver(() => { resizeCanvas(); render(); }).observe(DOM.viewport);
         bindEvents(); updateUI(); saveHistory(); requestAnimationFrame(loop);
+    }
+    
+    function initShortcutPanel() {
+        const isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+        const pcShortcuts = `
+            <span><strong>空格</strong> 拖拽 | <strong>R</strong> 旋转 | <strong>B</strong> 画笔 | <strong>E</strong> 橡皮擦</span>
+            <span><strong>滚轮</strong> 缩放 | <strong>←/→</strong> 逐格旋转</span>
+            <span><strong>Ctrl+Z</strong> 撤销 | <strong>Ctrl+Y</strong> 重做</span>
+        `;
+        const touchShortcuts = `
+            <span><strong>单指/Pencil</strong> 绘画</span>
+            <span><strong>双指按住</strong> 平移/缩放</span>
+            <span><strong>双指旋转</strong> 旋转画布</span>
+            <span><strong>双指点击</strong> 撤销 | <strong>三指点击</strong> 重做</span>
+        `;
+        
+        DOM.shortcutContent.innerHTML = isTouch ? touchShortcuts : pcShortcuts;
+        DOM.shortcutTitle.innerText = isTouch ? "手势指南 / Gestures" : "快捷键 / Shortcuts";
+        
+        DOM.shortcutToggleBtn.onclick = () => {
+            DOM.shortcutPanel.classList.toggle('collapsed');
+            const isCollapsed = DOM.shortcutPanel.classList.contains('collapsed');
+            DOM.shortcutToggleBtn.innerText = isCollapsed ? "▲" : "▼";
+        };
+        
+        DOM.shortcutPanel.addEventListener('pointerdown', (e) => e.stopPropagation());
+        DOM.shortcutPanel.addEventListener('touchstart', (e) => e.stopPropagation());
     }
 
     function render() {
@@ -309,7 +416,7 @@
             ctx.save(); setupTransform(ctx); drawGrid(ctx); ctx.restore();
         }
         
-        if (state.isCursorInCanvas && !state.isPanning && !state.isRotating) {
+        if (state.isCursorInCanvas && !state.isPanning && !state.isRotating && !state.isGesturing) {
             const activeLayer = getActiveLayer();
             if (activeLayer) {
                 ctx.save();
@@ -344,6 +451,7 @@
         ctx.globalAlpha = layer.opacity;
         ctx.strokeStyle = layer.color;
         ctx.fillStyle = layer.color;
+        // 移除压感，使用固定粗细
         ctx.lineWidth = layer.strokeWidth;
         ctx.lineCap = 'round';
         ctx.lineJoin = 'round';
@@ -413,6 +521,10 @@
         document.querySelector('label[for="onionAfterToggle"]').classList.toggle('active', state.onionSkins.showAfter && state.onionSkins.enabled);
         DOM.onionOpacityVal.textContent = state.onionSkins.opacity.toFixed(2);
         DOM.onionOpacity.value = state.onionSkins.opacity;
+        
+        // 更新扇形数显示
+        DOM.sliceValDisplay.textContent = state.sliceCount;
+        
         renderLayerList();
     }
     
@@ -442,7 +554,17 @@
 
     function getActiveLayer() { return state.activeLayerIndex > -1 ? state.layers[state.activeLayerIndex] : null; }
     function addLayer(name, color) { const newLayer = new Layer(Date.now(), name || `图层 ${state.layers.length + 1}`, color); state.layers.push(newLayer); setActiveLayer(state.layers.length - 1); saveHistory(); }
-    function deleteLayer() { if (state.layers.length <= 1) return; state.layers.splice(state.activeLayerIndex, 1); setActiveLayer(Math.max(0, state.activeLayerIndex - 1)); saveHistory(); }
+    
+    function deleteLayer() { 
+        if (state.layers.length <= 1) return; 
+        const layer = getActiveLayer();
+        if (confirm(`确定要删除图层 "${layer.name}" 吗？`)) {
+            state.layers.splice(state.activeLayerIndex, 1); 
+            setActiveLayer(Math.max(0, state.activeLayerIndex - 1)); 
+            saveHistory(); 
+        }
+    }
+    
     function clearLayer() { const layer = getActiveLayer(); if(layer && confirm(`确定要清空图层 "${layer.name}" 吗?`)) { layer.paths = []; saveHistory(); render(); } }
     function duplicateLayer() {
         const activeLayer = getActiveLayer(); if (!activeLayer) return;
@@ -486,15 +608,30 @@
             updateUI(); render();
         } catch (err) { alert('导入失败: 无效的文件格式或内容。\n' + err.message); console.error(err); }
     }
+    
+    // 旋转辅助函数
+    function rotateView(direction) {
+        state.viewRotation += direction * (360 / state.sliceCount);
+        state.viewRotation = (state.viewRotation % 360 + 360) % 360;
+        if (state.snapToMidline) snapRotation();
+        DOM.rotationSlider.value = state.viewRotation;
+        render();
+    }
 
     function bindEvents() {
+        // --- Pointer Events (绘画与单指操作) ---
+        
         DOM.viewport.addEventListener('pointerdown', e => { 
-            if (!e.isPrimary && e.pointerType !== 'pen') return;
+            if (state.isGesturing) return; // 手势中禁止绘图
+            if (e.pointerType === 'touch' && !e.isPrimary) return; 
+
             e.preventDefault();
+            
+            // --- 已移除双击切换功能 ---
 
             DOM.viewport.setPointerCapture(e.pointerId); 
             state.isCursorInCanvas = true; 
-            
+
             if (e.button === 1 || state.isPanning) { startDrag(e); return; } 
             
             if (state.isRotating) { 
@@ -515,7 +652,9 @@
         });
 
         DOM.viewport.addEventListener('pointermove', e => { 
-            if (!e.isPrimary && e.pointerType !== 'pen') return;
+            if (state.isGesturing) return;
+            if (e.pointerType === 'touch' && !e.isPrimary) return;
+
             e.preventDefault();
 
             state.cursorScreenX = e.clientX - DOM.viewport.getBoundingClientRect().left; 
@@ -554,7 +693,7 @@
         });
 
         DOM.viewport.addEventListener('pointerup', e => { 
-            if (!e.isPrimary && e.pointerType !== 'pen') return;
+            if (e.pointerType === 'touch' && !e.isPrimary) return;
             DOM.viewport.releasePointerCapture(e.pointerId); 
             
             if (state.isDrawing) { 
@@ -584,35 +723,140 @@
 
         DOM.viewport.addEventListener('pointerleave', () => { state.isCursorInCanvas = false; state.isDrawing = false; state.isErasing = false; state.drag.isActive = false; state.currentBrushPath = []; state.pathsToErase.clear(); render(); });
         DOM.viewport.addEventListener('pointerenter', () => { state.isCursorInCanvas = true; });
+
+        // --- Touch Events (核心手势逻辑 - 包含误触修复) ---
+        let startTouches = [];
+        let startPan = { x: 0, y: 0 };
+        let startZoom = 1;
+        let startRot = 0;
+        let startDist = 0;
+        let startAngle = 0;
+        let startCenter = { x: 0, y: 0 };
+        let isRotationLocked = false;
+        let touchStartTime = 0;
+        let maxTouches = 0;
+        let touchTotalMovement = 0; // 新增：记录总移动距离
+        
+        // 旋转阈值 (度)
+        const ROTATION_THRESHOLD = 15;
+
+        DOM.viewport.addEventListener('touchstart', e => {
+            if (e.touches.length >= 2) {
+                state.isGesturing = true;
+                state.isDrawing = false; 
+                state.isErasing = false;
+                state.currentBrushPath = [];
+            }
+            maxTouches = Math.max(maxTouches, e.touches.length);
+            if (e.touches.length === 1) {
+                touchStartTime = Date.now();
+                touchTotalMovement = 0; // 重置移动距离
+            }
+
+            if (e.touches.length === 2) {
+                startPan = { x: state.panX, y: state.panY };
+                startZoom = state.zoom;
+                startRot = state.viewRotation;
+                isRotationLocked = false; 
+                touchTotalMovement = 0; // 重置
+
+                const p1 = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+                const p2 = { x: e.touches[1].clientX, y: e.touches[1].clientY };
+
+                startDist = Math.hypot(p2.x - p1.x, p2.y - p1.y);
+                startAngle = Math.atan2(p2.y - p1.y, p2.x - p1.x) * 180 / Math.PI;
+                startCenter = { x: (p1.x + p2.x) / 2, y: (p1.y + p2.y) / 2 };
+            }
+        }, { passive: false });
+
+        DOM.viewport.addEventListener('touchmove', e => {
+            if (e.touches.length > 0) {
+                // 简单的位移累加逻辑
+                const touch = e.touches[0];
+                if (window.lastTouchX) {
+                    const dx = touch.clientX - window.lastTouchX;
+                    const dy = touch.clientY - window.lastTouchY;
+                    touchTotalMovement += Math.hypot(dx, dy);
+                }
+                window.lastTouchX = touch.clientX;
+                window.lastTouchY = touch.clientY;
+            }
+
+            if (e.touches.length === 2) {
+                e.preventDefault(); 
+                
+                const p1 = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+                const p2 = { x: e.touches[1].clientX, y: e.touches[1].clientY };
+                
+                const currCenter = { x: (p1.x + p2.x) / 2, y: (p1.y + p2.y) / 2 };
+                const currDist = Math.hypot(p2.x - p1.x, p2.y - p1.y);
+                const currAngle = Math.atan2(p2.y - p1.y, p2.x - p1.x) * 180 / Math.PI;
+
+                const angleDiff = currAngle - startAngle;
+                
+                // 增加阈值到15度，防止误触
+                if (!isRotationLocked && Math.abs(angleDiff) > ROTATION_THRESHOLD) {
+                    isRotationLocked = true; 
+                }
+
+                if (isRotationLocked) {
+                    state.viewRotation = startRot + angleDiff;
+                } else {
+                    const scaleFactor = currDist / (startDist || 1);
+                    const newZoom = Math.max(0.1, Math.min(10, startZoom * scaleFactor));
+                    const dx = currCenter.x - startCenter.x;
+                    const dy = currCenter.y - startCenter.y;
+
+                    const rect = DOM.viewport.getBoundingClientRect();
+                    const viewStartX = startCenter.x - rect.left;
+                    const viewStartY = startCenter.y - rect.top;
+                    
+                    const worldOffsetX = viewStartX - startPan.x;
+                    const worldOffsetY = viewStartY - startPan.y;
+                    
+                    state.panX = (viewStartX + dx) - (worldOffsetX * (newZoom / startZoom));
+                    state.panY = (viewStartY + dy) - (worldOffsetY * (newZoom / startZoom));
+                    
+                    state.zoom = newZoom;
+                }
+
+                if (state.snapToMidline) snapRotation(); 
+                DOM.rotationSlider.value = state.viewRotation;
+                render();
+            }
+        }, { passive: false });
+
+        DOM.viewport.addEventListener('touchend', e => {
+            if (e.touches.length === 0) {
+                state.isGesturing = false;
+                window.lastTouchX = null;
+                window.lastTouchY = null;
+                
+                const duration = Date.now() - touchStartTime;
+                // 核心修复：只有在移动距离非常小（小于10px）时才认为是点击
+                if (duration < 300 && touchTotalMovement < 10) { 
+                    if (maxTouches === 2) undo(); 
+                    else if (maxTouches === 3) redo(); 
+                }
+                maxTouches = 0;
+            }
+        });
+
         function startDrag(e) { state.drag.isActive = true; state.drag.startX = e.clientX; state.drag.startY = e.clientY; state.drag.startPanX = state.panX; state.drag.startPanY = state.panY; }
         function doDrag(e) { if (!state.drag.isActive) return; state.panX = state.drag.startPanX + (e.clientX - state.drag.startX); state.panY = state.drag.startPanY + (e.clientY - state.drag.startY); render(); }
-        DOM.viewport.addEventListener('wheel', e => { e.preventDefault(); if (e.shiftKey) { state.viewRotation += (e.deltaY > 0 ? -5 : 5); if (state.snapToMidline) snapRotation(); DOM.rotationSlider.value = state.viewRotation; } else { const rect = DOM.mainCanvas.getBoundingClientRect(); const mx = e.clientX - rect.left, my = e.clientY - rect.top; const zoomFactor = 1.1; let newZoom = state.zoom * (e.deltaY < 0 ? zoomFactor : 1 / zoomFactor); newZoom = Math.max(0.1, Math.min(newZoom, 10)); const offsetX = (mx - state.panX), offsetY = (my - state.panY); state.panX = mx - (offsetX * (newZoom / state.zoom)); state.panY = my - (offsetY * (newZoom / state.zoom)); state.zoom = newZoom; } render(); }, { passive: false });
+        DOM.viewport.addEventListener('wheel', e => { e.preventDefault(); if (e.shiftKey) { rotateView(e.deltaY > 0 ? -0.2 : 0.2); } else { const rect = DOM.mainCanvas.getBoundingClientRect(); const mx = e.clientX - rect.left, my = e.clientY - rect.top; const zoomFactor = 1.1; let newZoom = state.zoom * (e.deltaY < 0 ? zoomFactor : 1 / zoomFactor); newZoom = Math.max(0.1, Math.min(newZoom, 10)); const offsetX = (mx - state.panX), offsetY = (my - state.panY); state.panX = mx - (offsetX * (newZoom / state.zoom)); state.panY = my - (offsetY * (newZoom / state.zoom)); state.zoom = newZoom; } render(); }, { passive: false });
         
         window.addEventListener('keydown', e => { 
-            if (e.target.matches('input')) return; 
+            // 修复：只有文字输入框才允许捕获焦点，否则Space键应当平移
+            if (e.target.matches('input') && e.target.type === 'text') return; 
+            
             if (e.ctrlKey || e.metaKey) { if (e.key.toLowerCase() === 'z' && e.shiftKey) { e.preventDefault(); redo(); } else if (e.key.toLowerCase() === 'z') { e.preventDefault(); undo(); } if (e.key.toLowerCase() === 'y') { e.preventDefault(); redo(); } if (e.key === '0') { e.preventDefault(); centerView(); } return; } 
-            if (e.code === 'ArrowLeft' || e.code === 'ArrowRight') { e.preventDefault(); const direction = e.code === 'ArrowLeft' ? 1 : -1; state.viewRotation += direction * (360 / state.sliceCount); state.viewRotation = (state.viewRotation % 360 + 360) % 360; if (state.isDrawing) state.currentBrushPath.push({ x: state.cursorWorldX, y: state.cursorWorldY }); if (state.snapToMidline) snapRotation(); DOM.rotationSlider.value = state.viewRotation; render(); } 
+            if (e.code === 'ArrowLeft' || e.code === 'ArrowRight') { e.preventDefault(); const direction = e.code === 'ArrowLeft' ? 1 : -1; rotateView(direction); } 
             if(e.key === '[' || e.key === ']') { const layer = getActiveLayer(); if(layer) { const change = e.key === '[' ? -1 : 1; const newWidth = Math.max(1, Math.min(100, parseInt(layer.strokeWidth) + change)); changeActiveLayerProperty('strokeWidth', newWidth); } } 
             if (e.code === 'Space' && !e.repeat) { e.preventDefault(); state.isPanning = true; DOM.viewport.classList.add('panning'); state.isRotating = false; DOM.viewport.classList.remove('rotating'); } 
             if (e.code === 'KeyR' && !e.repeat) { if (!state.isPanning) { state.isRotating = true; DOM.viewport.classList.add('rotating'); } } 
-            
-            // 按键切换工具的逻辑
-            if (e.code === 'KeyB') { 
-                if (!state.isPanning) { 
-                    state.currentTool = 'brush'; 
-                    DOM.viewport.classList.remove('erasing'); 
-                    updateUI(); 
-                    render(); // 立即刷新
-                } 
-            } 
-            if (e.code === 'KeyE') { 
-                if (!state.isPanning) { 
-                    state.currentTool = 'eraser'; 
-                    DOM.viewport.classList.add('erasing'); 
-                    updateUI(); 
-                    render(); // 立即刷新
-                } 
-            } 
+            if (e.code === 'KeyB') { if (!state.isPanning) { state.currentTool = 'brush'; DOM.viewport.classList.remove('erasing'); updateUI(); render(); } } 
+            if (e.code === 'KeyE') { if (!state.isPanning) { state.currentTool = 'eraser'; DOM.viewport.classList.add('erasing'); updateUI(); render(); } } 
         });
         window.addEventListener('keyup', e => { if (e.code === 'Space') { state.isPanning = false; DOM.viewport.classList.remove('panning'); resetInteractionState(); render(); } if (e.code === 'KeyR') { if (!state.isPanning) { state.isRotating = false; DOM.viewport.classList.remove('rotating'); if (state.snapToMidline) { snapRotation(); render(); } } } });
         window.addEventListener('blur', () => { state.isPanning = false; DOM.viewport.classList.remove('panning', 'rotating'); resetInteractionState(); });
@@ -634,17 +878,43 @@
         DOM.layerOpacity.onchange = () => saveHistory();
         DOM.backgroundColorInput.oninput = e => { state.backgroundColor = e.target.value; updateUI(); render(); };
         
-        // 核心修复：点击工具按钮时立即调用 render() 以更新光标
-        DOM.modeFillBtn.onclick = () => { if (!state.isPanning) { state.currentTool = 'brush'; DOM.viewport.classList.remove('erasing'); changeActiveLayerProperty('mode', 'fill'); render(); } };
-        DOM.modeStrokeBtn.onclick = () => { if (!state.isPanning) { state.currentTool = 'brush'; DOM.viewport.classList.remove('erasing'); changeActiveLayerProperty('mode', 'stroke'); render(); } };
-        DOM.toolEraserBtn.onclick = () => { if (!state.isPanning) { state.currentTool = 'eraser'; DOM.viewport.classList.add('erasing'); updateUI(); render(); } };
+        DOM.modeFillBtn.onclick = () => { 
+            state.currentTool = 'brush'; 
+            DOM.viewport.classList.remove('erasing'); 
+            const layer = getActiveLayer();
+            if (layer) {
+                if(layer.mode !== 'fill') changeActiveLayerProperty('mode', 'fill');
+                else updateUI(); 
+            }
+            render(); 
+        };
+        DOM.modeStrokeBtn.onclick = () => { 
+            state.currentTool = 'brush'; 
+            DOM.viewport.classList.remove('erasing'); 
+            const layer = getActiveLayer();
+            if (layer) {
+                if(layer.mode !== 'stroke') changeActiveLayerProperty('mode', 'stroke');
+                else updateUI(); 
+            }
+            render(); 
+        };
+        DOM.toolEraserBtn.onclick = () => { 
+            state.currentTool = 'eraser'; 
+            DOM.viewport.classList.add('erasing'); 
+            updateUI(); 
+            render(); 
+        };
         
         DOM.onionToggle.onchange = e => { state.onionSkins.enabled = e.target.checked; updateUI(); render(); };
         DOM.onionBeforeToggle.onchange = e => { state.onionSkins.showBefore = e.target.checked; updateUI(); render(); };
         DOM.onionAfterToggle.onchange = e => { state.onionSkins.showAfter = e.target.checked; updateUI(); render(); };
         DOM.onionOpacity.oninput = e => { state.onionSkins.opacity = parseFloat(e.target.value); updateUI(); render(); };
         DOM.snapToggle.onchange = e => { state.snapToMidline = e.target.checked; if (state.snapToMidline) { snapRotation(); render(); } };
-        DOM.sliceCount.onchange = e => { state.sliceCount = parseInt(e.target.value); render(); };
+        
+        // 扇形数按钮逻辑
+        DOM.sliceDecBtn.onclick = () => { state.sliceCount = Math.max(4, state.sliceCount - 1); updateUI(); render(); };
+        DOM.sliceIncBtn.onclick = () => { state.sliceCount = Math.min(24, state.sliceCount + 1); updateUI(); render(); };
+        
         DOM.rotationSlider.oninput = e => { state.viewRotation = parseFloat(e.target.value); render(); };
         DOM.rotationSlider.onchange = () => { if (state.snapToMidline) { snapRotation(); render(); } };
         DOM.resetAllBtn.onclick = () => { if (confirm('确定要重置所有内容吗？')) { state.layers = []; state.projectName = '未命名项目'; state.backgroundColor = '#ffffff'; addLayer('图层 1'); state.rotDirection = 1; state.onionSkins.opacity = 0.5; centerView(); updateUI(); saveHistory(); setUnsaved(false); } };
@@ -653,10 +923,14 @@
         DOM.playbackModeBtn.onclick = function() { state.playbackMode = state.playbackMode === 'slice' ? 'uniform' : 'slice'; this.textContent = state.playbackMode === 'slice' ? '逐格模式' : '匀速模式'; };
         DOM.playBtn.onclick = () => { state.isPlaying = !state.isPlaying; DOM.playBtn.textContent = state.isPlaying ? '■ 停止' : '▶ 播放'; DOM.playBtn.classList.toggle('active', state.isPlaying); DOM.playBtn.style.background = state.isPlaying ? 'var(--danger-color)' : ''; if (!state.isPlaying) { state.animRotation = 0; render(); } };
         DOM.onionLayerBtn.onclick = () => { state.onionOnTop = !state.onionOnTop; updateUI(); render(); };
-
-        // 弹窗逻辑
         DOM.closeModalBtn.onclick = () => { DOM.welcomeModal.style.display = 'none'; };
         DOM.welcomeModal.onclick = (e) => { if (e.target === DOM.welcomeModal) { DOM.welcomeModal.style.display = 'none'; } };
+        
+        DOM.layoutToggleBtn.onclick = () => {
+            document.body.classList.toggle('layout-left');
+        };
+        DOM.rotLeftBtn.onclick = () => rotateView(1);
+        DOM.rotRightBtn.onclick = () => rotateView(-1);
 
         DOM.exportJsonBtn.onclick = async () => {
             const originalButtonText = DOM.exportJsonBtn.textContent;
@@ -713,6 +987,7 @@
 
     function getMouseAngle(clientX, clientY) { const rect = DOM.mainCanvas.getBoundingClientRect(); const z = state.zoom || 1; const screenCx = rect.left + state.panX + (CONFIG.baseSize/2 * z); const screenCy = rect.top + state.panY + (CONFIG.baseSize/2 * z); return Math.atan2(clientY - screenCy, clientX - screenCx) * 180 / Math.PI; }
     function resizeCanvas() { DOM.mainCanvas.width = DOM.viewport.clientWidth * state.dpr; DOM.mainCanvas.height = DOM.viewport.clientHeight * state.dpr; render(); }
+    
     function loop(time) {
         if (state.isPlaying) {
             if (!window._lastTime) window._lastTime = time;
