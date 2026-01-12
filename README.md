@@ -68,7 +68,7 @@ https://elephantzoo.pages.dev/
 | Undo              | Ctrl+Z   |
 | Redo              | Ctrl+Y   |
 | Reset view        | Ctrl+0   |
-| Adjust brush size | [[/]]    |
+| Adjust brush size | [/]    |
 | Fine-tune rotation| ← / →    |
 
 ### 📝 License
