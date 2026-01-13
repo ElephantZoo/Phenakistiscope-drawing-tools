@@ -235,8 +235,103 @@
         .cp-hue-wrap { height: 180px; }
         button { min-height: 36px; margin-bottom: 2px; }
     }
+    /* 隐蔽按钮样式：默认灰色，无背景，鼠标放上去变色 */
+    .text-btn {
+        background: none !important;
+        border: none;
+        color: #666; /* 很暗的灰色，不抢眼 */
+        font-size: 12px;
+        cursor: pointer;
+        padding: 5px 10px;
+        transition: all 0.3s;
+        text-decoration: none;
+        display: inline-block;
+        width: auto; /* 不占满整行 */
+    }
+    .text-btn:hover {
+        color: var(--danger-color); /* 悬停时变红，增加互动感 */
+        transform: scale(1.05);
+        background: none !important;
+    }
+    /* === 紧凑布局优化补丁 === */
+
+    /* 1. 减少侧边栏整体边距 */
+    .scroll-area { padding: 8px; }
+
+    /* 2. 压缩每个大区块（卡片） */
+    .panel-section { 
+        margin-bottom: 8px; /* 从 20px 减小到 8px */
+        padding: 8px;       /* 从 10px 减小到 8px */
+    }
+
+    /* 3. 压缩标题栏 */
+    .section-header { 
+        margin-bottom: 6px; /* 从 10px 减小到 6px */
+        padding-bottom: 4px; 
+        font-size: 10px;    /* 字体稍微改小，更显精致 */
+    }
+
+    /* 4. 压缩每一行的间距 */
+    .row { 
+        margin-bottom: 4px; /* 从 8px 减小到 4px */
+        min-height: 24px;   /* 降低最小行高 */
+    }
+
+    /* 5. 按钮变紧凑 */
+    button, .btn-label {
+        padding: 4px 8px;   /* 减小内边距 */
+        font-size: 11px;    /* 字体微调 */
+        min-height: 28px;   /* 降低按钮高度 */
+    }
+    
+    /* 6. 输入框和滑块变紧凑 */
+    input[type="text"] { padding: 1px 4px; }
+    input[type="range"] { height: 20px; } /* 缩小滑块占据的高度 */
+
+    /* 7. 图层列表变紧凑 */
+    .layer-item {
+        padding: 3px 6px;   /* 减小图层项的内边距 */
+        font-size: 11px;
+        min-height: 26px;
+    }
+    .layer-list {
+        max-height: 200px; /* 既然紧凑了，可以让列表显示更多行 */
+    }
+
+    /* 8. 颜色方块微调 */
+    .color-swatch-wrapper {
+        width: 20px; height: 20px; /*稍微改小 */
+    }
+    
+    /* 针对iPad/移动端的特殊处理：保持触摸区域不太小 */
+    @media (max-width: 1024px) {
+        button, .btn-label { min-height: 32px; } /* 触屏端稍微保留一点高度 */
+    }
+    /* === 侧边栏固定底部样式 === */
+    .sidebar-footer {
+        flex-shrink: 0; /* 禁止被压缩 */
+        padding: 8px;
+        background-color: var(--panel-color); /* 与侧边栏背景一致 */
+        border-top: 1px solid #333; /* 顶部分割线 */
+        text-align: center;
+        z-index: 20;
+    }
+
+    /* 优化按钮样式，让它更像一个底部菜单项 */
+    .sidebar-footer .text-btn {
+        width: 100%;
+        color: #888;
+        font-size: 11px;
+        padding: 6px 0;
+        opacity: 0.8;
+    }
+    .sidebar-footer .text-btn:hover {
+        background-color: rgba(255,255,255,0.05) !important; /* 微微发亮 */
+        color: var(--accent-color); /* 悬停变高亮色 */
+        opacity: 1;
+        transform: none; /* 底部栏不需要缩放动画，稳重一点 */
+    }
 </style>
-</head>
 <body>
     <div id="welcomeModal" class="modal-overlay">
         <div class="modal-content">
@@ -252,6 +347,31 @@
                     ❌ <strong>严禁任何商用、盈利、倒卖等商业牟利行为</strong> / Commercial use, profit-making, or resale is strictly prohibited.<br>
                     <div style="margin-top:8px; font-style: italic;">感谢使用 / Thank you for using ✨</div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 支持作者弹窗 -->
+    <div id="donateModal" class="modal-overlay" style="display: none;">
+        <div class="modal-content" style="max-width: 360px; text-align: center;">
+            <button class="close-modal" id="closeDonateBtn">×</button>
+            <div class="modal-header" style="text-align: center; border:none; padding-bottom:0;">
+                <span style="font-size: 24px;">☕</span>
+            </div>
+            <div class="modal-body">
+                <p style="font-size: 16px; margin-bottom: 20px; color: #fff;">
+                    如果这个工具对你有帮助<br>请我喝杯咖啡吧~
+                </p>
+                
+                <!-- 收款码区域 -->
+                <div style="background: #fff; padding: 10px; border-radius: 8px; display: inline-block;">
+                    <!-- 🔴 请在这里替换你的收款码图片 URL -->
+                    <img src="./donate.jpg" alt="收款码" style="width: 100%; max-width: 240px; height: auto; border-radius: 4px; display: block; margin: 0 auto;">
+                </div>
+
+                <p style="font-size: 12px; color: #888; margin-top: 15px;">
+                    您的支持将有助于服务器维护与功能开发<br>Thanks for your support!
+                </p>
             </div>
         </div>
     </div>
@@ -413,8 +533,16 @@
                 <input type="file" id="importJsonInput" accept=".json,.zip"> <button id="resetAllBtn" class="reset-btn">重置所有</button>
             </div>
         </div>
+        <!-- ... 上面是其他的 panel-section ... -->
+
+        <!-- 隐蔽的支持入口 -->
+        <div class="sidebar-footer" style="display: flex; gap: 5px;">
+        <button id="showAboutBtn" class="text-btn" style="flex:1;">ℹ 关于</button>
+        <button id="openDonateBtn" class="text-btn" style="flex:1;">❤ 支持作者</button>
     </div>
+    </div> <!-- 这里是 scroll-area 的结束标签 -->
 </div>
+
 <script>
     const CONFIG = { baseSize: 500, maxHistory: 50, pathSimplificationThreshold: 1.5 };
 
@@ -1561,6 +1689,36 @@
                 reader.readAsText(file);
             } else { alert('请选择一个 .json 或 .zip 文件。'); }
         };
+        // --- 支持作者弹窗逻辑 ---
+        const donateModal = document.getElementById('donateModal');
+        const openDonateBtn = document.getElementById('openDonateBtn');
+        const closeDonateBtn = document.getElementById('closeDonateBtn');
+
+        if (openDonateBtn) {
+            openDonateBtn.onclick = () => {
+                donateModal.style.display = 'flex';
+            };
+        }
+        
+        if (closeDonateBtn) {
+            closeDonateBtn.onclick = () => {
+                donateModal.style.display = 'none';
+            };
+        }
+
+        // 点击背景关闭
+        donateModal.onclick = (e) => {
+            if (e.target === donateModal) {
+                donateModal.style.display = 'none';
+            }
+        };
+        const showAboutBtn = document.getElementById('showAboutBtn');
+        // 这里的 DOM.welcomeModal 是我们在 init() 里获取过的
+        if (showAboutBtn && DOM.welcomeModal) {
+            showAboutBtn.onclick = () => {
+                DOM.welcomeModal.style.display = 'flex'; // 显示弹窗
+            };
+        }
     }
 
     function getScreenToWorldPos(screenX, screenY) {
