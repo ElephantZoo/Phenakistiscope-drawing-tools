@@ -1030,6 +1030,8 @@
             });
             DOM.ctx = DOM.mainCanvas.getContext('2d');
             state.dpr = window.devicePixelRatio || 1;
+            DOM.onionBuf = document.createElement('canvas'); // 创建缓冲画布
+            DOM.onionCtx = DOM.onionBuf.getContext('2d');    // 获取缓冲画笔
 
             initGlobalAutoBlur();
             window.lastPencilTime = 0;
@@ -1374,31 +1376,71 @@
             ctx.restore();
         }
 
-        function renderOnionSkins(ctx) {
-            const activeLayer = getActiveLayer(); if (!activeLayer || activeLayer.paths.length === 0) return;
-            // 草稿图层不显示洋葱皮
-            if (activeLayer.type === 'draft') return;
+        /* === 用这段代码完全替换原有的 renderOnionSkins 函数 === */
+function renderOnionSkins(ctx) {
+    const activeLayer = getActiveLayer(); 
+    if (!activeLayer || activeLayer.paths.length === 0) return;
+    if (activeLayer.type === 'draft') return; // 草稿不显示
 
-            const step = 360 / state.sliceCount * Math.PI / 180;
-            const drawVectorOnion = (rotation, color) => {
-                ctx.save();
-                ctx.globalAlpha = state.onionSkins.opacity;
-                ctx.translate(CONFIG.baseSize / 2, CONFIG.baseSize / 2); ctx.rotate(rotation); ctx.translate(-CONFIG.baseSize / 2, -CONFIG.baseSize / 2);
-                ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = activeLayer.strokeWidth; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-                ctx.beginPath();
-                activeLayer.paths.forEach(path => {
-                    if (path.points.length < 1) return;
-                    ctx.moveTo(path.points[0].x, path.points[0].y);
-                    if (path.points.length === 1) { ctx.lineTo(path.points[0].x, path.points[0].y); }
-                    else { for (let i = 1; i < path.points.length; i++) ctx.lineTo(path.points[i].x, path.points[i].y); }
-                    if (activeLayer.mode === 'fill' && path.points.length > 1) ctx.closePath();
-                });
-                if (activeLayer.mode === 'fill') ctx.fill(); else ctx.stroke();
-                ctx.restore();
-            };
-            if (state.onionSkins.showBefore) drawVectorOnion(-step * state.rotDirection, '#ff0000');
-            if (state.onionSkins.showAfter) drawVectorOnion(step * state.rotDirection, '#0000ff');
-        }
+    const step = 360 / state.sliceCount * Math.PI / 180;
+
+    // 定义一个绘制函数：先画到缓冲层(纯色平铺)，再画到主画布(带透明度)
+    const drawToBufferAndScreen = (rotation, color) => {
+        // 1. 清空缓冲区
+        DOM.onionCtx.clearRect(0, 0, DOM.onionBuf.width, DOM.onionBuf.height);
+        
+        // 2. 让缓冲区的坐标系跟主画布保持一致 (DPR缩放 + 平移/缩放)
+        DOM.onionCtx.save();
+        DOM.onionCtx.scale(state.dpr, state.dpr); 
+        setupTransform(DOM.onionCtx); 
+        
+        // 3. 应用洋葱皮的旋转偏移
+        DOM.onionCtx.translate(CONFIG.baseSize/2, CONFIG.baseSize/2); 
+        DOM.onionCtx.rotate(rotation); 
+        DOM.onionCtx.translate(-CONFIG.baseSize/2, -CONFIG.baseSize/2);
+        
+        // 4. 设置画笔 (注意：这里不设透明度，只用纯色)
+        DOM.onionCtx.strokeStyle = color; 
+        DOM.onionCtx.fillStyle = color; 
+        DOM.onionCtx.lineWidth = activeLayer.strokeWidth; 
+        DOM.onionCtx.lineCap = 'round'; 
+        DOM.onionCtx.lineJoin = 'round';
+        
+        // 5. 逐个绘制路径到缓冲区
+        activeLayer.paths.forEach(path => {
+            if (path.points.length < 1) return;
+            
+            DOM.onionCtx.beginPath();
+            DOM.onionCtx.moveTo(path.points[0].x, path.points[0].y);
+            
+            if (path.points.length === 1) { 
+                DOM.onionCtx.lineTo(path.points[0].x, path.points[0].y); 
+            } else { 
+                for (let i = 1; i < path.points.length; i++) DOM.onionCtx.lineTo(path.points[i].x, path.points[i].y); 
+            }
+            
+            if (activeLayer.mode === 'fill') {
+                if (path.points.length > 1) DOM.onionCtx.closePath();
+                DOM.onionCtx.fill(); // 纯色填充：自身重叠不会变深，也不会有破洞
+            } else {
+                DOM.onionCtx.stroke();
+            }
+        });
+        
+        DOM.onionCtx.restore(); // 恢复缓冲区状态
+
+        // 6. 将画好的缓冲区贴到主画布上 (在这里应用透明度)
+        ctx.save();
+        ctx.setTransform(1, 0, 0, 1, 0, 0); // 临时重置主画布坐标系，以像素对齐方式贴图
+        ctx.globalAlpha = state.onionSkins.opacity; // 应用用户设置的透明度
+        ctx.drawImage(DOM.onionBuf, 0, 0); 
+        ctx.restore();
+    };
+
+    // 分别绘制前一帧(红)和后一帧(蓝)
+    if (state.onionSkins.showBefore) drawToBufferAndScreen(-step * state.rotDirection, '#ff0000');
+    if (state.onionSkins.showAfter) drawToBufferAndScreen(step * state.rotDirection, '#0000ff');
+}
 
         function updateUI() {
             DOM.projectNameInput.value = state.projectName;
@@ -1835,9 +1877,23 @@
             return { x: finalX, y: finalY };
         }
 
-        function getMouseAngle(clientX, clientY) { const rect = DOM.mainCanvas.getBoundingClientRect(); const z = state.zoom || 1; const screenCx = rect.left + state.panX + (CONFIG.baseSize / 2 * z); const screenCy = rect.top + state.panY + (CONFIG.baseSize / 2 * z); return Math.atan2(clientY - screenCy, clientX - screenCx) * 180 / Math.PI; }
-        function resizeCanvas() { DOM.mainCanvas.width = DOM.viewport.clientWidth * state.dpr; DOM.mainCanvas.height = DOM.viewport.clientHeight * state.dpr; render(); }
-
+        function getMouseAngle(clientX, clientY) {
+            const rect = DOM.mainCanvas.getBoundingClientRect();
+            const z = state.zoom || 1;
+            const screenCx = rect.left + state.panX + (CONFIG.baseSize / 2 * z);
+            const screenCy = rect.top + state.panY + (CONFIG.baseSize / 2 * z);
+            return Math.atan2(clientY - screenCy, clientX - screenCx) * 180 / Math.PI;
+        }        
+        
+        function resizeCanvas() {
+            DOM.mainCanvas.width = DOM.viewport.clientWidth * state.dpr;
+            DOM.mainCanvas.height = DOM.viewport.clientHeight * state.dpr;
+            
+            /* === 新增下面这两行 === */
+            DOM.onionBuf.width = DOM.mainCanvas.width;
+            DOM.onionBuf.height = DOM.mainCanvas.height;
+            render();
+        }
         function loop(time) {
             if (state.isPlaying) {
                 if (!window._lastTime) window._lastTime = time;
