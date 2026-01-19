@@ -2167,70 +2167,76 @@
         ctx.restore();
       }
 
-      function renderOnionSkins(ctx) {
-        const activeLayer = getActiveLayer();
-        if (!activeLayer || activeLayer.paths.length === 0) return;
-        if (activeLayer.type === "draft") return;
+      // === 修复后的 renderOnionSkins 函数 ===
+function renderOnionSkins(ctx) {
+    const activeLayer = getActiveLayer();
+    if (!activeLayer || activeLayer.paths.length === 0) return;
+    if (activeLayer.type === 'draft') return;
 
-        const step = ((360 / state.sliceCount) * Math.PI) / 180;
+    const step = 360 / state.sliceCount * Math.PI / 180;
 
-        const drawVectorOnion = (rotation, color) => {
-          ctx.save();
-          ctx.globalAlpha = state.onionSkins.opacity;
-          ctx.translate(CONFIG.baseSize / 2, CONFIG.baseSize / 2);
-          ctx.rotate(rotation);
-          ctx.translate(-CONFIG.baseSize / 2, -CONFIG.baseSize / 2);
-          ctx.strokeStyle = color;
-          ctx.fillStyle = color;
-          ctx.lineWidth = activeLayer.strokeWidth;
-          ctx.lineCap = "round";
-          ctx.lineJoin = "round";
+    const drawVectorOnion = (rotation, color) => {
+        ctx.save();
+        ctx.globalAlpha = state.onionSkins.opacity;
+        ctx.translate(CONFIG.baseSize / 2, CONFIG.baseSize / 2);
+        ctx.rotate(rotation);
+        ctx.translate(-CONFIG.baseSize / 2, -CONFIG.baseSize / 2);
+        ctx.strokeStyle = color;
+        ctx.fillStyle = color;
+        ctx.lineWidth = activeLayer.strokeWidth;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
 
-          // ▼▼▼ 核心修改从这里开始 ▼▼▼
-          activeLayer.paths.forEach((path) => {
+        // 1. 在循环之前开启路径 (只开启一次)
+        ctx.beginPath();
+
+        activeLayer.paths.forEach(path => {
+            // === 保持你的选区变换逻辑不变 ===
             let pointsToDraw;
             const isSelectedAndTransforming = 
                 state.selection.status === 'transforming' && 
                 state.selection.selectedPathIds.has(path.id);
 
             if (isSelectedAndTransforming) {
-              // 如果路径正在被变换，就计算它变换后的位置
-              const originalPath = state.selection.originalPaths.get(path.id);
-              if (!originalPath) return; // 安全检查
-              pointsToDraw = originalPath.points.map(p => 
-                transformPoint(p, state.selection.bbox, state.selection.transform)
-              );
+                const originalPath = state.selection.originalPaths.get(path.id);
+                if (!originalPath) return;
+                pointsToDraw = originalPath.points.map(p => 
+                    transformPoint(p, state.selection.bbox, state.selection.transform)
+                );
             } else {
-              // 否则，使用它的原始位置
-              pointsToDraw = path.points;
+                pointsToDraw = path.points;
             }
+            // ================================
 
             if (pointsToDraw.length < 1) return;
 
-            // 为每个路径独立开始一个新笔触，这对填充模式至关重要
-            ctx.beginPath(); 
+            // 绘制子路径
             ctx.moveTo(pointsToDraw[0].x, pointsToDraw[0].y);
             for (let i = 1; i < pointsToDraw.length; i++) {
-              ctx.lineTo(pointsToDraw[i].x, pointsToDraw[i].y);
+                ctx.lineTo(pointsToDraw[i].x, pointsToDraw[i].y);
             }
-            
-            if (activeLayer.mode === "fill" && pointsToDraw.length > 1) {
-              ctx.closePath();
-              ctx.fill(); // 填充模式下，每个路径画完就填充
-            } else {
-              ctx.stroke(); // 路径模式下，每个路径画完就描边
+
+            // 如果是填充模式，需要闭合每一个子路径，防止形状混乱
+            // 但不要在这里 fill，只是定义形状
+            if (activeLayer.mode === 'fill' && pointsToDraw.length > 1) {
+                ctx.closePath();
             }
-          });
-          // ▲▲▲ 核心修改在这里结束 ▲▲▲
+        });
 
-          ctx.restore();
-        };
+        // 2. 在循环结束后，一次性进行填充或描边
+        // 这样透明度会应用在整个合并后的形状上，重叠部分不会变深
+        if (activeLayer.mode === 'fill') {
+            ctx.fill();
+        } else {
+            ctx.stroke();
+        }
 
-        if (state.onionSkins.showBefore)
-          drawVectorOnion(-step * state.rotDirection, "#ff0000");
-        if (state.onionSkins.showAfter)
-          drawVectorOnion(step * state.rotDirection, "#0000ff");
-      }
+        ctx.restore();
+    };
+
+    if (state.onionSkins.showBefore) drawVectorOnion(-step * state.rotDirection, '#ff0000');
+    if (state.onionSkins.showAfter) drawVectorOnion(step * state.rotDirection, '#0000ff');
+}
 
       function updateUI() {
         DOM.projectNameInput.value = state.projectName;
