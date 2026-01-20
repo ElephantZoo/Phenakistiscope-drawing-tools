@@ -530,9 +530,30 @@
         width: 20px;
         text-align: center;
       }
+      
+      /* --- 新增样式 START --- */
+      .layer-pin {
+        cursor: pointer;
+        width: 20px;
+        text-align: center;
+        font-size: 12px;
+        opacity: 0.3;
+        transition: opacity 0.2s;
+        user-select: none;
+      }
+      .layer-pin.active {
+        opacity: 1;
+        text-shadow: 0 0 5px var(--accent-color);
+      }
+      .layer-pin:hover {
+        opacity: 0.8;
+      }
+      /* --- 新增样式 END --- */
+
       .layer-name {
         flex: 1;
         user-select: none;
+        padding-left: 4px; /*稍微调整一下间距*/
       }
       .layer-move-btn {
         padding: 0 4px;
@@ -1367,6 +1388,7 @@
           this.id = id;
           this.name = name;
           this.visible = true;
+          this.noRotate = false; // 
           this.paths = [];
           this.mode = "stroke";
           this.type = type; // normal or draft
@@ -1966,10 +1988,10 @@
           ctx.translate(size / 2, size / 2);
           ctx.scale(scale, scale);
           ctx.rotate(((state.viewRotation - 90) * Math.PI) / 180);
-          ctx.rotate((state.animRotation * Math.PI) / 180);
+          // ctx.rotate((state.animRotation * Math.PI) / 180); // <--- 已移除：导出时的全局旋转
           ctx.translate(-CONFIG.baseSize / 2, -CONFIG.baseSize / 2);
         } else {
-          setupTransform(ctx);
+          setupTransform(ctx); // 这里面我们刚才已经去掉了 animRotation
         }
 
         const radius = CONFIG.baseSize / 2 - 2;
@@ -1990,6 +2012,8 @@
         ctx.clip();
 
         const activeLayer = getActiveLayer();
+        
+        // 洋葱皮 (底层)
         if (
           state.onionSkins.enabled &&
           !state.isPlaying &&
@@ -1999,22 +2023,51 @@
         )
           renderOnionSkins(ctx);
 
+        // --- 修改后的图层渲染循环 START ---
+        const cx = CONFIG.baseSize / 2;
+        const cy = CONFIG.baseSize / 2;
+        const animRad = (state.animRotation * Math.PI) / 180;
+
         state.layers.forEach((layer) => {
-          if (layer.visible) renderLayer(ctx, layer, exporting);
+          if (layer.visible) {
+            ctx.save();
+            // 如果正在播放(或导出)，且图层没有被标记为"不旋转"，则应用旋转
+            if ((state.isPlaying || exporting) && !layer.noRotate) {
+                ctx.translate(cx, cy);
+                ctx.rotate(animRad);
+                ctx.translate(-cx, -cy);
+            }
+            renderLayer(ctx, layer, exporting);
+            ctx.restore();
+          }
         });
+        // --- 修改后的图层渲染循环 END ---
 
         // === SELECTION SYSTEM START ===
         if (state.selection.status === "transforming" && !exporting) {
-          renderTransformedSelection(ctx);
+             // 选区变换框应该跟随当前选中图层的旋转状态吗？
+             // 既然处于变换模式，通常动画是暂停的，animRotation=0，所以这里直接画没问题
+            renderTransformedSelection(ctx);
         }
         // === SELECTION SYSTEM END ===
 
-        if (state.isDrawing && state.currentBrushPath.length > 0)
-          renderLayer(
-            ctx,
-            { ...getActiveLayer(), paths: [new Path(state.currentBrushPath)] },
-            exporting
-          );
+        // 正在绘制的笔刷路径 (跟随当前激活图层的设定)
+        if (state.isDrawing && state.currentBrushPath.length > 0) {
+            ctx.save();
+            if ((state.isPlaying || exporting) && activeLayer && !activeLayer.noRotate) {
+                ctx.translate(cx, cy);
+                ctx.rotate(animRad);
+                ctx.translate(-cx, -cy);
+            }
+            renderLayer(
+                ctx,
+                { ...activeLayer, paths: [new Path(state.currentBrushPath)] },
+                exporting
+            );
+            ctx.restore();
+        }
+
+        // 洋葱皮 (顶层)
         if (
           state.onionSkins.enabled &&
           !state.isPlaying &&
@@ -2023,8 +2076,10 @@
           !exporting
         )
           renderOnionSkins(ctx);
+        
         ctx.restore();
 
+        // 辅助线/网格 (只在非播放、非导出时显示)
         if (!state.isPlaying && !exporting) {
           ctx.save();
           setupTransform(ctx);
@@ -2046,6 +2101,7 @@
         }
         // === SELECTION SYSTEM END ===
 
+        // 光标
         if (
           state.isCursorInCanvas &&
           !state.isPanning &&
@@ -2100,7 +2156,10 @@
           cy = CONFIG.baseSize / 2;
         ctx.translate(cx, cy);
         ctx.rotate(((state.viewRotation - 90) * Math.PI) / 180);
-        if (state.isPlaying) ctx.rotate((state.animRotation * Math.PI) / 180);
+        
+        // --- 移除/注释掉这行 ---
+        // if (state.isPlaying) ctx.rotate((state.animRotation * Math.PI) / 180);
+        
         ctx.translate(-cx, -cy);
       }
 
@@ -2439,46 +2498,74 @@ function renderOnionSkins(ctx) {
           }`;
           div.dataset.layerId = layer.id;
           div.draggable = true;
+
+          // 1. 可见性按钮 (原代码)
           const vis = document.createElement("span");
           vis.className = "layer-vis";
           vis.innerHTML = layer.visible ? "👁️" : "🚫";
+          vis.title = "切换可见性";
           vis.onclick = (e) => {
             e.stopPropagation();
             toggleLayerVisibility(layer.id);
           };
+
+          // --- 2. 新增：不旋转(图钉)按钮 START ---
+          const pin = document.createElement("span");
+          pin.className = `layer-pin ${layer.noRotate ? "active" : ""}`;
+          pin.innerHTML = "📌"; 
+          pin.title = layer.noRotate ? "该图层不跟随旋转" : "该图层跟随旋转";
+          pin.onclick = (e) => {
+            e.stopPropagation();
+            toggleLayerNoRotate(layer.id);
+          };
+          // --- 新增 END ---
+
           const nameBox = document.createElement("span");
           nameBox.className = "layer-name";
           nameBox.innerText =
             layer.name + (layer.type === "draft" ? " (草稿)" : "");
+          
           const colorIndicator = document.createElement("div");
           colorIndicator.style.cssText = `width:12px; height:12px; background-color:${layer.color}; border-radius:3px; border:1px solid #222; flex-shrink:0; opacity:${layer.opacity};`;
+          
+          // ... 移动按钮逻辑 ...
           const upBtn = document.createElement("button");
+          // ... (原代码不变)
           upBtn.className = "layer-move-btn";
           upBtn.innerHTML = "↑";
-          upBtn.onclick = (e) => {
-            e.stopPropagation();
-            moveLayer(i, 1);
-          };
+          upBtn.onclick = (e) => { e.stopPropagation(); moveLayer(i, 1); };
+
           const downBtn = document.createElement("button");
           downBtn.className = "layer-move-btn";
           downBtn.innerHTML = "↓";
-          downBtn.onclick = (e) => {
-            e.stopPropagation();
-            moveLayer(i, -1);
-          };
-          div.append(vis, colorIndicator, nameBox, upBtn, downBtn);
+          downBtn.onclick = (e) => { e.stopPropagation(); moveLayer(i, -1); };
+
+          // 注意：这里把 pin 加进去了
+          div.append(vis, pin, colorIndicator, nameBox, upBtn, downBtn);
+
           div.onclick = () =>
             setActiveLayer(state.layers.findIndex((l) => l.id === layer.id));
+          // ... 拖拽事件 ...
           div.addEventListener("dragstart", handleDragStart);
           div.addEventListener("dragover", handleDragOver);
-          div.addEventListener("dragleave", (e) =>
-            e.currentTarget.classList.remove("drag-over")
-          );
+          div.addEventListener("dragleave", (e) => e.currentTarget.classList.remove("drag-over"));
           div.addEventListener("drop", handleDrop);
           div.addEventListener("dragend", handleDragEnd);
+          
           DOM.layerList.prepend(div);
         });
       }
+
+      function toggleLayerNoRotate(layerId) {
+        const layer = state.layers.find((l) => l.id === layerId);
+        if (layer) {
+          layer.noRotate = !layer.noRotate;
+          saveHistory();
+          renderLayerList(); // 刷新列表以更新图标状态
+          render(); // 刷新画布
+        }
+      }
+
 
       function getActiveLayer() {
         return state.activeLayerIndex > -1
