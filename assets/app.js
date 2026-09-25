@@ -112,6 +112,15 @@
         targetCallback: null,
       };
 
+      function setHeaderCollapsed(collapsed) {
+        if (!DOM.headerToggleBtn) return;
+        document.body.classList.toggle("header-collapsed", collapsed);
+        const label = collapsed ? "展开顶部栏" : "收起顶部栏";
+        DOM.headerToggleBtn.textContent = collapsed ? "⌄" : "⌃";
+        DOM.headerToggleBtn.title = label;
+        DOM.headerToggleBtn.setAttribute("aria-label", label);
+      }
+
       function setTransportCollapsed(collapsed) {
         const stage = DOM.viewport ? DOM.viewport.closest(".stage") : null;
         if (!stage || !DOM.transportToggleBtn) return;
@@ -141,6 +150,7 @@
           "statusDot",
           "statusText",
           "playBtn",
+          "headerToggleBtn",
           "transportToggleBtn",
           "playbackModeBtn",
           "snapToggle",
@@ -222,6 +232,13 @@
         });
         DOM.ctx = DOM.mainCanvas.getContext("2d");
         state.dpr = window.devicePixelRatio || 1;
+        try {
+          setHeaderCollapsed(
+            localStorage.getItem("phenaki-header-collapsed") === "1",
+          );
+        } catch (_) {
+          setHeaderCollapsed(false);
+        }
         try {
           setTransportCollapsed(
             localStorage.getItem("phenaki-transport-collapsed") === "1",
@@ -2341,6 +2358,16 @@
             state.animRotation = 0;
             render();
           }
+        };
+        DOM.headerToggleBtn.onclick = () => {
+          const collapsed = !document.body.classList.contains("header-collapsed");
+          setHeaderCollapsed(collapsed);
+          try {
+            localStorage.setItem(
+              "phenaki-header-collapsed",
+              collapsed ? "1" : "0",
+            );
+          } catch (_) {}
         };
         DOM.transportToggleBtn.onclick = () => {
           const stage = DOM.viewport.closest(".stage");
