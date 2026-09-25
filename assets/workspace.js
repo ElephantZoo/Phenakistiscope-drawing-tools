@@ -46,7 +46,13 @@ function normalizeProject(data, filename = "") {
     playbackMode: source.playbackMode === "uniform" ? "uniform" : "slice",
     backgroundColor: color(source.backgroundColor, "#ffffff"),
     onionSkins: { enabled: bool(onion.enabled, bool(source.onionEnabled, true)), showBefore: bool(onion.showBefore, true), showAfter: bool(onion.showAfter, true), opacity: number(onion.opacity ?? source.onionOpacity, 0.2, 0, 1) },
-    onionOnTop: bool(source.onionOnTop, false), snapToMidline: bool(source.snapToMidline, true)
+    onionOnTop: bool(source.onionOnTop, false), snapToMidline: bool(source.snapToMidline, true),
+    ...(source.zoom === undefined ? {} : {
+      zoom: number(source.zoom, 1, 0.1, 10),
+      panX: number(source.panX, 0, -1e7, 1e7),
+      panY: number(source.panY, 0, -1e7, 1e7),
+      viewRotation: number(source.viewRotation, 0, -1e7, 1e7)
+    })
   };
 }
 
@@ -179,6 +185,22 @@ openColorPicker = function (...args) {
 
 document.addEventListener("DOMContentLoaded", () => {
   const byId = id => document.getElementById(id);
+  const themeButton = byId("themeToggleBtn");
+  function syncThemeButton() {
+    const dark = document.documentElement.dataset.theme !== "light";
+    themeButton.querySelector(".theme-icon").textContent = dark ? "☀" : "☾";
+    themeButton.querySelector(".theme-label").textContent = dark ? "浅色" : "深色";
+    const nextLabel = dark ? "切换浅色外观" : "切换深色外观";
+    themeButton.setAttribute("aria-label", nextLabel);
+    themeButton.title = nextLabel;
+  }
+  themeButton.onclick = () => {
+    const next = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+    document.documentElement.dataset.theme = next;
+    try { localStorage.setItem("phenaki-theme", next); } catch (_) {}
+    syncThemeButton();
+  };
+  syncThemeButton();
   const exportPanel = byId("exportPanel"), exportButton = byId("exportMenuBtn");
   function closeExport() { exportPanel.hidden = true; exportButton.setAttribute("aria-expanded", "false"); }
   exportButton.onclick = () => { exportPanel.hidden = !exportPanel.hidden; exportButton.setAttribute("aria-expanded", String(!exportPanel.hidden)); };

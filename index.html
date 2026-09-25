@@ -1,7 +1,8 @@
 <!doctype html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-theme="dark">
   <head>
     <meta charset="UTF-8" />
+    <script>try { document.documentElement.dataset.theme = localStorage.getItem("phenaki-theme") === "light" ? "light" : "dark"; } catch (_) {}</script>
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
     <meta
       name="viewport"
@@ -28,6 +29,7 @@
     <script src="assets/jszip.min.js"></script>
     <link rel="stylesheet" href="assets/base.css" />
     <link rel="stylesheet" href="assets/workspace.css" />
+    <link rel="stylesheet" href="assets/dark.css" />
   </head>
 
   <body>
@@ -214,7 +216,7 @@
       <span class="header-divider"></span>
       <div class="project-title"><label for="projectNameInput">项目名称</label><input id="projectNameInput" type="text" value="未命名项目" maxlength="100" aria-label="项目名称" /></div>
       <div class="save-indicator" role="status"><span class="dot saved" id="statusDot"></span><span id="statusText">尚未导出</span></div>
-      <div class="header-actions"><button id="importProjectBtn" class="quiet-btn">打开项目</button><input type="file" id="importJsonInput" accept=".json,.zip" aria-label="打开 JSON 或 ZIP 项目" />
+      <div class="header-actions"><button id="themeToggleBtn" class="quiet-btn theme-toggle" title="切换浅色外观" aria-label="切换浅色外观"><span class="theme-icon" aria-hidden="true">☀</span><span class="theme-label">浅色</span></button><button id="importProjectBtn" class="quiet-btn">打开项目</button><input type="file" id="importJsonInput" accept=".json,.zip" aria-label="打开 JSON 或 ZIP 项目" />
       <button id="exportMenuBtn" class="primary-btn" aria-expanded="false" aria-controls="exportPanel">导出 <span aria-hidden="true">↗</span></button><button id="inspectorToggle" class="mobile-only" aria-expanded="false" aria-controls="inspector">设置</button></div>
     </header>
     <nav class="tool-rail" aria-label="绘画工具">

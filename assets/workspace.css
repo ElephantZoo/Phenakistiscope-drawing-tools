@@ -92,3 +92,4 @@ body.layout-left {grid-template-columns:292px minmax(0,1fr) 76px; }body.layout-l
 .floating-bubble button {background:#edf2fa;color:#536985;}
 .floating-bubble button#selectionConfirmBtn {color:white;}
 .stage {isolation:isolate;z-index:0;}
+.canvas-hint {top:8px;}

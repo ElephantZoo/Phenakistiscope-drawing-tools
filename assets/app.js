@@ -1422,12 +1422,17 @@
       // Persist only project data; gestures, selection and playback are transient.
       function projectData() {
         const keys = ["projectName", "layers", "activeLayerIndex", "sliceCount", "fps",
-          "rotDirection", "playbackMode", "backgroundColor", "onionSkins", "onionOnTop", "snapToMidline"];
+          "rotDirection", "playbackMode", "backgroundColor", "onionSkins", "onionOnTop", "snapToMidline",
+          "zoom", "panX", "panY", "viewRotation"];
         return Object.fromEntries(keys.map(key => [key, state[key]]));
       }
       function contentSnapshot() {
         const data = projectData();
         delete data.activeLayerIndex;
+        delete data.zoom;
+        delete data.panX;
+        delete data.panY;
+        delete data.viewRotation;
         return JSON.stringify(data);
       }
       let savedSnapshot = null;
@@ -1559,7 +1564,8 @@
           DOM.viewport.style.cursor = "";
           undoStack = [];
           redoStack = [];
-          centerView();
+          if (imported.zoom === undefined) centerView();
+          else { DOM.rotationSlider.value = state.viewRotation; render(); }
           saveHistory();
           savedLabel = "已载入项目";
           setUnsaved(false);
@@ -1590,7 +1596,7 @@
         DOM.viewport.addEventListener("pointerdown", (e) => {
           if (e.target !== DOM.mainCanvas && e.target !== DOM.viewport) return;
           if (e.button === 2) return;
-          if (e.pointerType === "touch" && !state.allowTouchDraw) return;
+          if (e.pointerType === "touch" && !state.allowTouchDraw && state.currentTool === "brush") return;
           if (e.button === 1 || state.isPanning) {
             e.preventDefault();
             DOM.viewport.setPointerCapture(e.pointerId);
@@ -2343,7 +2349,7 @@
 
         DOM.exportJsonBtn.onclick = async () => {
           confirmSelection();
-          const originalButtonText = DOM.exportJsonBtn.textContent;
+          const originalButtonMarkup = DOM.exportJsonBtn.innerHTML;
           DOM.exportJsonBtn.textContent = "正在打包...";
           DOM.exportJsonBtn.disabled = true;
           try {
@@ -2376,23 +2382,23 @@
             console.error("导出 ZIP 失败:", error);
             alert("项目导出失败。请重试；如果仍失败，可先导出 PNG 保留画面。\n" + error.message);
           } finally {
-            DOM.exportJsonBtn.textContent = originalButtonText;
+            DOM.exportJsonBtn.innerHTML = originalButtonMarkup;
             DOM.exportJsonBtn.disabled = false;
           }
         };
 
         DOM.exportPngBtn.onclick = () => {
           confirmSelection();
-          const originalText = DOM.exportPngBtn.textContent;
+          const originalMarkup = DOM.exportPngBtn.innerHTML;
           DOM.exportPngBtn.textContent = "生成中...";
           DOM.exportPngBtn.disabled = true;
-          const size = 1024;
-          const tempCanvas = document.createElement("canvas");
-          tempCanvas.width = size;
-          tempCanvas.height = size;
-          const tempCtx = tempCanvas.getContext("2d");
-          render(tempCtx, size, size, true);
           try {
+            const size = 1024;
+            const tempCanvas = document.createElement("canvas");
+            tempCanvas.width = size;
+            tempCanvas.height = size;
+            const tempCtx = tempCanvas.getContext("2d");
+            render(tempCtx, size, size, true);
             const dataUrl = tempCanvas.toDataURL("image/png");
             const link = document.createElement("a");
             const safeName = (state.projectName || "animation")
@@ -2403,12 +2409,14 @@
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
+            showToast("PNG 下载已开始");
           } catch (e) {
             console.error(e);
-            alert("导出图片失败");
+            alert("导出图片失败。\\n" + e.message);
+          } finally {
+            DOM.exportPngBtn.innerHTML = originalMarkup;
+            DOM.exportPngBtn.disabled = false;
           }
-          DOM.exportPngBtn.textContent = originalText;
-          DOM.exportPngBtn.disabled = false;
         };
 
         DOM.exportVideoBtn.onclick = () => {
