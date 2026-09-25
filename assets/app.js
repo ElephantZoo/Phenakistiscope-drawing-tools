@@ -112,6 +112,16 @@
         targetCallback: null,
       };
 
+      function setTransportCollapsed(collapsed) {
+        const stage = DOM.viewport ? DOM.viewport.closest(".stage") : null;
+        if (!stage || !DOM.transportToggleBtn) return;
+        stage.classList.toggle("transport-collapsed", collapsed);
+        const label = collapsed ? "展开播放控制" : "收起播放控制";
+        DOM.transportToggleBtn.textContent = collapsed ? "⌃" : "⌄";
+        DOM.transportToggleBtn.title = label;
+        DOM.transportToggleBtn.setAttribute("aria-label", label);
+      }
+
       function init() {
         const ids = [
           "viewport",
@@ -131,6 +141,7 @@
           "statusDot",
           "statusText",
           "playBtn",
+          "transportToggleBtn",
           "playbackModeBtn",
           "snapToggle",
           "layerOpacity",
@@ -211,6 +222,13 @@
         });
         DOM.ctx = DOM.mainCanvas.getContext("2d");
         state.dpr = window.devicePixelRatio || 1;
+        try {
+          setTransportCollapsed(
+            localStorage.getItem("phenaki-transport-collapsed") === "1",
+          );
+        } catch (_) {
+          setTransportCollapsed(false);
+        }
 
         // Keep native keyboard focus for accessible controls.
         window.lastPencilTime = 0;
@@ -2323,6 +2341,17 @@
             state.animRotation = 0;
             render();
           }
+        };
+        DOM.transportToggleBtn.onclick = () => {
+          const stage = DOM.viewport.closest(".stage");
+          const collapsed = !stage.classList.contains("transport-collapsed");
+          setTransportCollapsed(collapsed);
+          try {
+            localStorage.setItem(
+              "phenaki-transport-collapsed",
+              collapsed ? "1" : "0",
+            );
+          } catch (_) {}
         };
         DOM.onionLayerBtn.onclick = () => {
           state.onionOnTop = !state.onionOnTop;
